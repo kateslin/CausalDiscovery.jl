@@ -1,6 +1,6 @@
 module CompileJavascriptUtils
 
-using ..AExpressions, ..AutumnStandardLibrary
+using ..AExpressions
 using MLStyle: @match
 
 export compile_js, compileinit_js, compilestate_js, compilenext_js, compileprev_js, compilelibrary_js, compileharnesses_js, compilegenerators_js
@@ -13,7 +13,7 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
   arr = [expr.head, expr.args...]
   res = @match arr begin
-    [:if, args...] => compileif(expr, data, parent) 
+    [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
     [:typedecl, args...] => compiletypedecl(expr, data, parent)
     [:let, args...] => compilelet(expr, data, parent)
@@ -38,7 +38,7 @@ function compile_js(expr::AbstractArray, data::Dict{String, Any}, parent::Union{
   elseif expr[1] == :List
     "$(compile_js(expr[2:end], data))[ARR_BND]"
   else
-    compile_js(expr[1], data)      
+    compile_js(expr[1], data)
   end
 end
 
@@ -68,7 +68,8 @@ end
 # ----- End Exported Functions -----#
 
 function compileif(expr, data, parent)
-  if expr.args[2] isa AExpr && (expr.args[2].head in [:assign, :let]) 
+  print("here")
+  if expr.args[2] isa AExpr && (expr.args[2].head in [:assign, :let])
     return """if $(compile_js(expr.args[1], data)) {
         $(compile_js(expr.args[2], data))
       } else {
@@ -76,39 +77,39 @@ function compileif(expr, data, parent)
       }
   """
   else
-    return "$(compile_js(expr.args[1], data)) ? $(compile_js(expr.args[2], data)) : $(compile_js(expr.args[3], data));"
-  end 
+    return "$(compile_js(expr.args[1], data)) ? $(compile_js(expr.args[2], data)) : $(compile_js(expr.args[3], data))"
+  end
 end
 
 function compileassign(expr, data, parent)
   # get type
   type = data["types"][expr.args[1]]
-  if (typeof(expr.args[2]) == AExpr && expr.args[2].head == :fn)    
+  if (typeof(expr.args[2]) == AExpr && expr.args[2].head == :fn)
     args = map(x -> compile_js(x, data), expr.args[2].args[1].args) # function args
-    argtypes = map(x -> compile_js(x in data["objects"] ? 
-                        :Object 
-                        : 
-                        (x in data["objects"]) ? 
-                        [:List, :Object] 
-                        : 
+    argtypes = map(x -> compile_js(x in data["objects"] ?
+                        :Object
+                        :
+                        (x in data["objects"]) ?
+                        [:List, :Object]
+                        :
                         x, data), type.args[1:(end-1)]) # function arg types
     tuples = [(args[i], argtypes[i]) for i in [1:length(args);]]
     typedargs = map(x -> "$(x[2]) $(x[1])", tuples)
-    returntype = compile_js(type.args[end] in data["objects"] ? 
-                            :Object 
-                            : 
-                            (type.args[end] in data["objects"]) ? 
-                            [:List, :Object] 
-                            : 
-                            type.args[end], data) 
-    """ 
+    returntype = compile_js(type.args[end] in data["objects"] ?
+                            :Object
+                            :
+                            (type.args[end] in data["objects"]) ?
+                            [:List, :Object]
+                            :
+                            type.args[end], data)
+    """
     $(returntype) $(compile_js(expr.args[1], data))($(join(typedargs, ", "))) {
-      $(compile_js(expr.args[2].args[2], data)); 
+      $(compile_js(expr.args[2].args[2], data));
     }
-    """ 
+    """
   else # handle non-function assignments
     # handle global assignments
-    if parent !== nothing && (parent.head == :program) 
+    if parent !== nothing && (parent.head == :program)
       if (typeof(expr.args[2]) == AExpr && expr.args[2].head == :initnext)
         push!(data["initnext"], expr)
       else
@@ -116,13 +117,13 @@ function compileassign(expr, data, parent)
       end
       ""
     # handle non-global assignments
-    else 
+    else
       "$(compile_js(expr.args[1], data)) = $(compile_js(expr.args[2], data));"
     end
   end
 end
 
-#I think its good for javascript? 
+#I think its good for javascript?
 function compiletypedecl(expr, data, parent)
   if (parent !== nothing && parent.head == :program)
     data["types"][expr.args[1]] = expr.args[2]
@@ -139,7 +140,7 @@ end
 
 function compiletypealias(expr, data, parent)
   name = string(expr.args[1]);
-  fields = map(field -> "$(compile_js(field.args[2], data)) $(compile_js(field.args[1], data));", 
+  fields = map(field -> "$(compile_js(field.args[2], data)) $(compile_js(field.args[1], data));",
            expr.args[2].args)
   """
   struct $(name) {
@@ -176,7 +177,7 @@ function compilecall(expr, data, parent)
     "$(name)($(join(args, ", ")))"
   elseif name == "prev"
     "$(compile_js(expr.args[2], data))Prev($(join(["state", map(x -> compile_js(x, data), expr.args[3:end])...], ", ")))"
-  elseif name != "=="        
+  elseif name != "=="
     "$(name)($(compile_js(expr.args[2], data)), $(compile_js(expr.args[3], data)))"
   else
     "$(compile_js(expr.args[2], data)) == $(compile_js(expr.args[3], data))"
@@ -192,10 +193,10 @@ end
 function compileobject(expr, data, parent)
   name = compile_js(expr.args[1], data)
   push!(data["objects"], expr.args[1])
-  custom_fields = map(field -> 
+  custom_fields = map(field ->
                       "$(compile_js(field.args[2], data)) $(compile_js(field.args[1], data));",
                       filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[2:end]))
-  custom_field_names = map(field -> "$(compile_js(field.args[1], data))", 
+  custom_field_names = map(field -> "$(compile_js(field.args[1], data))",
                            filter(x -> (x isa AExpr && x.head == :typedecl), expr.args[2:end]))
   data["customFields"][expr.args[1]] = custom_field_names;
   custom_field_assgns = map(field -> "$(compile_js(field.args[1], data))=$(compile_js(field.args[1], data))",
@@ -205,16 +206,16 @@ function compileobject(expr, data, parent)
   rendering = renderingIsList ? rendering : "{$(rendering)}"
 
   # compile updateObj functions, and move/rotate/nextWater/nextLiquid
-  update_obj_fields = map(x -> [compile_js(x.args[2], data), compile_js(x.args[1], data)], 
+  update_obj_fields = map(x -> [compile_js(x.args[2], data), compile_js(x.args[1], data)],
                                filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[2:end]))
   update_obj_field_assigns = map(x -> "$(x[2])=object.$(x[2])", update_obj_fields)
   update_obj_functions = map(x -> """
                                   Object function updateObj$(name)$(string(uppercase(x[2][1]), x[2][2:end]))(Object object, $(x[1]) $(x[2])) {
                                     return new $(name)($(join(vcat(string(x[2], "=", x[2]), filter(y -> split(y, "=")[1] != x[2], update_obj_field_assigns)), ", ")));
-                                  }  
-                                  """, update_obj_fields)                               
-  
-  
+                                  }
+                                  """, update_obj_fields)
+
+
   """
   struct $(name) extends Object {
     $(join(custom_fields, "\n"))
@@ -222,9 +223,9 @@ function compileobject(expr, data, parent)
   $(name) $(string(lowercase(name[1]), name[2:end]))($(join([custom_fields..., "Position origin"], ", "))) {
     return new $(name)($(join([custom_field_assgns..., "origin=origin", string("type=\"", name, "\""), "alive=true", "render=$(rendering)"], ", ")));
   }
-  
+
   $(join(update_obj_functions, "\n"))
-  
+
   """
 end
 
@@ -239,16 +240,16 @@ end
 end
 
 function compilestate_js(data)
-  stateHistories = map(expr -> "$(compile_sk(data["types"][expr.args[1]] in data["objects"] ? 
-                                  :Object 
-                                  : 
+  stateHistories = map(expr -> "$(compile_sk(data["types"][expr.args[1]] in data["objects"] ?
+                                  :Object
+                                  :
                                   data["types"][expr.args[1]] in map(x -> [:List, x], data["objects"]) ?
                                   [:List, :Object]
                                   :
-                                  data["types"][expr.args[1]], data))[ARR_BND] $(compile_sk(expr.args[1], data))History;", 
+                                  data["types"][expr.args[1]], data))[ARR_BND] $(compile_sk(expr.args[1], data))History;",
   vcat(data["initnext"], data["lifted"]))
   GRID_SIZE = filter(x -> x.args[1] == :GRID_SIZE, data["lifted"])[1].args[2]
-  
+
   """
   int GRID_SIZE = $(GRID_SIZE);
   struct State {
@@ -267,17 +268,17 @@ end
 function compileinit_js(data)
   objectInstances = filter(x -> data["types"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                           collect(keys(data["types"])))
-  historyInitNextDeclarations = map(x -> "$(compile_js(data["types"][x.args[1]] in data["objects"] ? 
-                                            :Object 
-                                            : 
+  historyInitNextDeclarations = map(x -> "$(compile_js(data["types"][x.args[1]] in data["objects"] ?
+                                            :Object
+                                            :
                                             data["types"][x.args[1]] in map(x -> [:List, x], data["objects"]) ?
                                             [:List, :Object]
                                             :
-                                            data["types"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2].args[1], data));", 
-                                     data["initnext"]) 
-  historyLiftedDeclarations = map(x -> "$(compile_js(data["types"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2], data));", 
+                                            data["types"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2].args[1], data));",
+                                     data["initnext"])
+  historyLiftedDeclarations = map(x -> "$(compile_js(data["types"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2], data));",
                            data["lifted"])
-  historyInits = map(x -> "state.$(compile_js(x.args[1], data))History[0] = $(compile_js(x.args[1], data));", 
+  historyInits = map(x -> "state.$(compile_js(x.args[1], data))History[0] = $(compile_js(x.args[1], data));",
                      vcat(data["initnext"], data["lifted"]))
   """
   State init() {
@@ -301,15 +302,15 @@ end
 function compilenext_js(data)
   objectInstances = filter(x -> data["types"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                            collect(keys(data["types"])))
-  currHistValues = map(x -> "$(compile_js(data["types"][x.args[1]] in data["objects"] ? 
-                              :Object 
-                              : 
+  currHistValues = map(x -> "$(compile_js(data["types"][x.args[1]] in data["objects"] ?
+                              :Object
+                              :
                               data["types"][x.args[1]] in map(x -> [:List, x], data["objects"]) ?
                               [:List, :Object]
                               :
-                              data["types"][x.args[1]], data)) $(compile_js(x.args[1], data)) = state.$(compile_js(x.args[1], data))History[state.time];", 
+                              data["types"][x.args[1]], data)) $(compile_js(x.args[1], data)) = state.$(compile_js(x.args[1], data))History[state.time];",
                        vcat(data["initnext"], data["lifted"]))
-  nextHistValues = map(x -> "state.$(compile_js(x.args[1], data))History[state.time] = $(compile_js(x.args[1], data));", 
+  nextHistValues = map(x -> "state.$(compile_js(x.args[1], data))History[state.time] = $(compile_js(x.args[1], data));",
                        vcat(data["initnext"], data["lifted"]))
   onClauses = map(x -> """if ($(compile_js(x[1], data))) {
                             $(compile_js(x[2], data))
@@ -317,7 +318,7 @@ function compilenext_js(data)
   """
   State next(State state, Click click, Left left, Right right, Up up, Down down) {
     $(join(currHistValues, "\n"))
-    
+
     $(join(onClauses, "\n"))
     state.time = state.time + 1;
     $(join(nextHistValues, "\n"))
@@ -335,19 +336,19 @@ end
 function compileprev_js(data)
   objectInstances = filter(x -> data["types"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                            collect(keys(data["types"])))
-  prevFunctions = map(x -> """$(compile_js(data["types"][x] in data["objects"] ? 
-                                  :Object 
-                                  : 
+  prevFunctions = map(x -> """$(compile_js(data["types"][x] in data["objects"] ?
+                                  :Object
+                                  :
                                   data["types"][x] in map(x -> [:List, x], data["objects"]) ?
                                   [:List, :Object]
                                   :
                                   data["types"][x], data)) $(compile_js(x, data))PrevN(State state, int n) {
                                 return state.$(compile_js(x, data))History[state.time - n >= 0 ? state.time - n : 0];
                            }""", objectInstances)
-  
-  prevFunctionsNoArgs = map(x -> """$(compile_js(data["types"][x] in data["objects"] ? 
-  :Object 
-  : 
+
+  prevFunctionsNoArgs = map(x -> """$(compile_js(data["types"][x] in data["objects"] ?
+  :Object
+  :
   data["types"][x] in map(x -> [:List, x], data["objects"]) ?
   [:List, :Object]
   :
@@ -357,30 +358,30 @@ function compileprev_js(data)
   """
   $(join(prevFunctions, "\n"))
   $(join(prevFunctionsNoArgs, "\n"))
-  """  
+  """
 end
 
 function compilelibrary_js(data)
-  
+
   """
   Object updateObjOrigin(Object object, Position origin) {
-    $(join(map(x -> 
+    $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
                 return new $(compile_js(x, data))($(join(vcat("origin=origin", "alive=object.alive", "type=object.type", "render=object.render", map(y -> "$(y)=object.$(y)", data["customFields"][x])),", ")));
-              } 
+              }
               """, data["objects"]), "\n"))
   }
   Object updateObjAlive(Object object, bit alive) {
-    $(join(map(x -> 
+    $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
                 return new $(compile_js(x, data))($(join(vcat("origin=object.origin", "alive=alive", "type=object.type", "render=object.render", map(y -> "$(y)=object.$(y)", data["customFields"][x])), ", ")));
-              } 
+              }
               """, data["objects"]), "\n"))
   }
   Object updateObjRender(Object object, Cell[ARR_BND] render) {
-    $(join(map(x -> 
+    $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
                 return new $(compile_js(x, data))($(join(vcat("origin=object.origin", "alive=object.alive", "type=object.type", "render=render", map(y -> "$(y)=object.$(y)", data["customFields"][x])),", ")));

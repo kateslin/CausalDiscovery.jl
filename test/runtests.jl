@@ -9,7 +9,8 @@ using Test
 
 @testset "Autumn" begin
   # include("Autumn/sexpr.jl")
-  # include("Autumn/transform.jl")
-  include("Autumn/particles.jl")
-  include("Autumn/compile.jl")
+  # # include("Autumn/transform.jl")
+  # include("Autumn/particles.jl")
+  # include("Autumn/compile.jl")
+  include("Autumn/compiletojavascript.jl")
 end

@@ -20,6 +20,9 @@ include("sexpr.jl")
 include("compileutils.jl")
 @reexport using .CompileUtils
 
+include("compilejavascriptutils.jl")
+@reexport using .CompileJavascriptUtils
+
 include("compile.jl")
 @reexport using .Compile
 
