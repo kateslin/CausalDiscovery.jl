@@ -20,7 +20,7 @@ end
 function test_compile_if()
   data = construct_data()
   aexpr = au"""(if (== x 3) then (= y 4) else (= y 5))"""
-  @test string(compile(aexpr, data)) == "if x == 3\n    y = 4\nelse\n    y = 5\nend"   
+  @test string(compile(aexpr, data)) == "if (x == 3) {\n    y = 4;\n} else {\n    y = 5;\n}"   
 end
 
 function test_compile_assign()
