@@ -20,50 +20,50 @@ end
 function test_compile_if()
   data = construct_data()
   aexpr = au"""(if (== x 3) then (= y 4) else (= y 5))"""
-  @test string(compile(aexpr, data)) == "if (x == 3) {\n    y = 4;\n} else {\n    y = 5;\n}"   
+  @test string(compile_js(aexpr, data)) == "if (x == 3) {\n    y = 4;\n} else {\n    y = 5;\n}"   
 end
 
 function test_compile_assign()
   data = construct_data()
   aexpr = au"""(= x 3)"""
-  @test compile(aexpr, data) == :(x = 3)
+  @test compile_js(aexpr, data) == :(x = 3)
 end
 
 function test_compile_typedecl()
   data = construct_data()
   aexpr = au"""(: x Int)"""
-  @test compile(aexpr, data) == :(local x::Int)
+  @test compile_js(aexpr, data) == :(local x::Int)
 end
 
 function test_compile_external()
   data = construct_data()
   aexpr = au"""(external (: click Click))"""
-  @test compile(aexpr, data) == :()
+  @test compile_js(aexpr, data) == :()
 end
 
 function test_compile_let()
   data = construct_data()
   aexpr = au"""(let ((= y 3) (= x y)) x)"""
 
-  @test compile(aexpr, data).args[end - 2: end] == [:(y = 3), :(x = y), :x]
+  @test compile_js(aexpr, data).args[end - 2: end] == [:(y = 3), :(x = y), :x]
 end
 
 function test_compile_list()
   data = construct_data()
   aexpr = au"""(list 1 2 3 4 5)"""
-  @test compile(aexpr, data) == :([1, 2, 3, 4, 5])
+  @test compile_js(aexpr, data) == :([1, 2, 3, 4, 5])
 end
 
 function test_compile_call()
   data = construct_data()
   aexpr = au"""(f 1 2 3) """
-  @test compile(aexpr, data) == :(f(1, 2, 3))
+  @test compile_js(aexpr, data) == :(f(1, 2, 3))
 end
 
 function test_compile_field()
   data = construct_data()
   aexpr = au"""(.. position x)"""
-  @test compile(aexpr, data) == :(position.x)
+  @test compile_js(aexpr, data) == :(position.x)
 end
 
 function test_compile_particles()
