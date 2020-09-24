@@ -298,28 +298,29 @@ function compilelist(expr, data, parent)
   "[$(join(map(x -> compile_js(x, data), expr.args), ", "))]"
 end
 
+# TODO: Confirm this makes sense for all test cases
 function compilecall(expr, data, parent)
   name = compile_js(expr.args[1], data);
   args = map(x -> compile_js(x, data), expr.args[2:end]);
   objectNames = map(x -> compile_js(x, data), data["objects"])
   if name == "clicked"
-    "clicked(click, $(join(args, ", ")))"
+    "clicked(click, $(join(args, ", ")));"
   elseif name == "Position"
-    "new $(name)(x=$(args[1]), y=$(args[2]))"
+    "new $(name)(x=$(args[1]), y=$(args[2]));"
   elseif name == "Cell"
     if length(args) == 2
-      "new $(name)(position=$(args[1]), color=$(args[2]))"
+      "new $(name)(position=$(args[1]), color=$(args[2]));"
     elseif length(args) == 3
-      "new $(name)(position=new Position(x=$(args[1]), y=$(args[2])), color=$(args[3]))"
+      "new $(name)(position=new Position(x=$(args[1]), y=$(args[2])), color=$(args[3]));"
     end
   elseif name in objectNames
-    "$(lowercase(name[1]))$(name[2:end])($(join(args, "\n")))"
+    "$(lowercase(name[1]))$(name[2:end])($(join(args, "\n")));"
   elseif !(name in binaryOperators) && name != "prev"
-    "$(name)($(join(args, ", ")))"
+    "$(name)($(join(args, ", ")));"
   elseif name == "prev"
-    "$(compile_js(expr.args[2], data))Prev($(join(["state", map(x -> compile_js(x, data), expr.args[3:end])...], ", ")))"
+    "$(compile_js(expr.args[2], data))Prev($(join(["state", map(x -> compile_js(x, data), expr.args[3:end])...], ", ")));"
   elseif name != "=="
-    "$(name)($(compile_js(expr.args[2], data)), $(compile_js(expr.args[3], data)))"
+    "$(name)($(compile_js(expr.args[2], data)), $(compile_js(expr.args[3], data)));"
   else
     "$(compile_js(expr.args[2], data)) == $(compile_js(expr.args[3], data))"
   end

@@ -55,7 +55,7 @@ end
 function test_compile_call()
   data = construct_data()
   aexpr = au"""(f 1 2 3) """
-  @test compile_js(aexpr, data) == :(f(1, 2, 3))
+  @test compile_js(aexpr, data) == "f(1, 2, 3);"
 end
 
 function test_compile_field()
@@ -125,7 +125,7 @@ end
   # test_compile_external()
   # test_compile_let()
   test_compile_list()
-  # test_compile_call()
+  test_compile_call()
   # test_compile_field()
   # test_compile_particles()
   # test_compile_types_inferred()
