@@ -33,12 +33,6 @@ function test_compile_assign()
   @test compile_js(aexpr, data) == "x = 3;"
 end
 
-function test_compile_typedecl()
-  data = construct_data()
-  aexpr = au"""(: x Int)"""
-  @test compile_js(aexpr, data) == :(local x::Int)
-end
-
 function test_compile_external()
   data = construct_data()
   aexpr = au"""(external (: click Click))"""
@@ -128,7 +122,6 @@ end
 @testset "compile" begin
   # test_compile_if()
   test_compile_assign()
-  # test_compile_typedecl()
   # test_compile_external()
   # test_compile_let()
   # test_compile_list()

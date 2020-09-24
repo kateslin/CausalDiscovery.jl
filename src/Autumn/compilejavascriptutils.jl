@@ -15,7 +15,6 @@ function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, N
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
-    [:typedecl, args...] => compiletypedecl(expr, data, parent)
     [:let, args...] => compilelet(expr, data, parent)
     [:typealias, args...] => compiletypealias(expr, data, parent)
     [:lambda, args...] => compilelambda(expr, data, parent)
@@ -278,16 +277,6 @@ function compileassign(expr, data, parent)
   end
 end
 
-#I think its good for javascript?
-function compiletypedecl(expr, data, parent)
-  if (parent !== nothing && parent.head == :program)
-    data["types"][expr.args[1]] = expr.args[2]
-    ""
-  else
-    """$(compile_js(expr.args[2], data)) $(compile_js(expr.args[1], data));"""
-  end
-end
-
 function compilelet(expr, data, parent)
   assignments = map(x -> compile_js(x, data), expr.args)
   join(vcat(assignments[1:end-1], string("return ", assignments[end])), "\n");
@@ -345,6 +334,7 @@ function compilefield(expr, data, parent)
   "$(obj).$(fieldname)"
 end
 
+# TODO: Figure out how to deal with typedecl since there's not typedecl in javascript 
 function compileobject(expr, data, parent)
   name = compile_js(expr.args[1], data)
   push!(data["objects"], expr.args[1])
