@@ -22,6 +22,7 @@ include("compileutils.jl")
 
 include("compilejavascriptutils.jl")
 @reexport using .CompileJavascriptUtils
+export compile_js, compilegenerators_js, compileharnesses_js, compileinit_js, compilelibrary_js, compilenext_js, compileprev_js, compilestate_js
 
 include("compile.jl")
 @reexport using .Compile
