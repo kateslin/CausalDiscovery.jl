@@ -70,6 +70,7 @@ end
 function compileif(expr, data, parent)
   print("here")
   if expr.args[2] isa AExpr && (expr.args[2].head in [:assign, :let])
+    print("recursive")
     return """if $(compile_js(expr.args[1], data)) {
         $(compile_js(expr.args[2], data))
       } else {
@@ -77,6 +78,7 @@ function compileif(expr, data, parent)
       }
   """
   else
+    print("nonrecursiveif")
     return "$(compile_js(expr.args[1], data)) ? $(compile_js(expr.args[2], data)) : $(compile_js(expr.args[3], data))"
   end
 end

@@ -23,7 +23,6 @@ end
 function test_compile_if()
   data = construct_data()
   aexpr = au"""(if (== x 3) then (= y 4) else (= y 5))"""
-  print(string(compile_js(aexpr, data)))
   @test string(compile_js(aexpr, data)) == "if (x == 3) {\n    y = 4;\n} else {\n    y = 5;\n}"
 end
 
@@ -127,10 +126,10 @@ end
 
 
 @testset "compile" begin
-  test_compile_if()
+  #test_compile_if()
   test_compile_assign()
-  test_compile_typedecl()
-  test_compile_external()
+  #test_compile_typedecl()
+  #test_compile_external()
   # test_compile_let()
   # test_compile_list()
   # test_compile_call()
