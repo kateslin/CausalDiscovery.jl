@@ -1,6 +1,6 @@
 module CompileJavascriptUtils
 
-using ..AExpressions, ..AutumnStandardLibrary, ..SExpr
+using ..AExpressions
 using MLStyle: @match
 
 export compile_js, compileinit_js, compilestate_js, compilenext_js, compileprev_js, compilelibrary_js, compileharnesses_js, compilegenerators_js
@@ -218,12 +218,15 @@ function compileif(expr, data, parent)
   print("here")
   if expr.args[2] isa AExpr && (expr.args[2].head in [:assign, :let])
     print("recursive")
-    return """if $(compile_js(expr.args[1], data)) {
-        $(compile_js(expr.args[2], data))
-      } else {
-        $(compile_js(expr.args[3], data))
-      }
-  """
+    print(data)
+    statement = """if $(compile_js(expr.args[1], data)) {
+      $(compile_js(expr.args[2], data))
+    } else {
+      $(compile_js(expr.args[3], data))
+    }
+"""
+    print("RECURSIVE STATEMENT IS: ", statement)
+    return statement
   else
     print("nonrecursiveif")
     return "$(compile_js(expr.args[1], data)) ? $(compile_js(expr.args[2], data)) : $(compile_js(expr.args[3], data))"
@@ -232,7 +235,10 @@ end
 
 function compileassign(expr, data, parent)
   # get type
-  type = data["types"][expr.args[1]]
+  print(expr.args)
+  print(data)
+  type = typeof(expr.args[1])
+  # type = data["types"][expr.args[1]]
   if (typeof(expr.args[2]) == AExpr && expr.args[2].head == :fn)
     args = map(x -> compile_js(x, data), expr.args[2].args[1].args) # function args
     argtypes = map(x -> compile_js(x in data["objects"] ?

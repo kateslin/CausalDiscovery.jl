@@ -1,7 +1,7 @@
 "Compilation to Julia (and other targets, if you want)"
 module Compile
 
-using ..AExpressions, ..CompileUtils
+using ..AExpressions, ..CompileUtils, ..CompileJavascriptUtils
 import MacroTools: striplines
 
 export compiletojulia, runprogram, compiletojavascript
