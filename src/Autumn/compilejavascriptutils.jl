@@ -271,6 +271,10 @@ function compileassign(expr, data, parent)
 end
 
 function compilelet(expr, data, parent)
+  print("Inside of compilelet\n")
+  print("EXPR IS: ", expr, "\n")
+  print("data IS: ", data, "\n")
+
   assignments = map(x -> compile_js(x, data), expr.args)
   join(vcat(assignments[1:end-1], string("return ", assignments[end])), "\n");
 end
@@ -291,7 +295,7 @@ function compilelambda(expr, data, parent)
 end
 
 function compilelist(expr, data, parent)
-  "{ $(join(map(x -> compile_js(x, data), expr.args), ", ")) }"
+  "[$(join(map(x -> compile_js(x, data), expr.args), ", "))]"
 end
 
 function compilecall(expr, data, parent)

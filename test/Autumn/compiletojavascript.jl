@@ -43,13 +43,13 @@ function test_compile_let()
   data = construct_data()
   aexpr = au"""(let ((= y 3) (= x y)) x)"""
 
-  @test compile_js(aexpr, data).args[end - 2: end] == [:(y = 3), :(x = y), :x]
+  @test compile_js(aexpr, data).args[end - 2: end] == "IMPLEMENT THIS"
 end
 
 function test_compile_list()
   data = construct_data()
   aexpr = au"""(list 1 2 3 4 5)"""
-  @test compile_js(aexpr, data) == :([1, 2, 3, 4, 5])
+  @test compile_js(aexpr, data) == "[1, 2, 3, 4, 5]"
 end
 
 function test_compile_call()
@@ -124,7 +124,7 @@ end
   test_compile_assign()
   # test_compile_external()
   # test_compile_let()
-  # test_compile_list()
+  test_compile_list()
   # test_compile_call()
   # test_compile_field()
   # test_compile_particles()
