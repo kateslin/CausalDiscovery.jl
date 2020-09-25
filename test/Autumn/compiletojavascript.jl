@@ -61,7 +61,7 @@ end
 function test_compile_field()
   data = construct_data()
   aexpr = au"""(.. position x)"""
-  @test compile_js(aexpr, data) == :(position.x)
+  @test compile_js(aexpr, data) == "position.x"
 end
 
 function test_compile_particles()
@@ -126,7 +126,7 @@ end
   # test_compile_let()
   test_compile_list()
   test_compile_call()
-  # test_compile_field()
+  test_compile_field()
   # test_compile_particles()
   # test_compile_types_inferred()
 end
