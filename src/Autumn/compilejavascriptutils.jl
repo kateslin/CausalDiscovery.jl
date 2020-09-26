@@ -343,8 +343,10 @@ end
 
 # TODO: Figure out how to deal with typedecl since there's not typedecl in javascript
 function compileobject(expr, data, parent)
+  print("compile obj\n")
   name = compile_js(expr.args[1], data)
   push!(data["objects"], expr.args[1])
+  print(name)
   custom_fields = map(field ->
                       "$(compile_js(field.args[2], data)) $(compile_js(field.args[1], data));",
                       filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[2:end]))

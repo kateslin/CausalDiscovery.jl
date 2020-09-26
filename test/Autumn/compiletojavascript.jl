@@ -94,7 +94,11 @@ this.y = y;
 """
 end
 
-
+function test_compile_object()
+  data = construct_data()
+  aexpr = """(: particles (List Particle))"""
+  print(compile_js(aexpr, data))
+end
 
 function test_compile_particles()
   a = au"""(program
@@ -162,6 +166,7 @@ end
   test_compile_field()
   test_compile_lambda()
   test_compile_typealias()
+  test_compile_object()
   # test_compile_particles()
   # test_compile_types_inferred()
 end

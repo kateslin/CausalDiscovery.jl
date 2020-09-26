@@ -38,7 +38,7 @@ function compile(expr::AbstractArray, data::Dict{String, Any}, parent::Union{AEx
   elseif expr[1] == :List
     :(Array{$(compile(expr[2:end], data))})
   else
-    expr[1]      
+    expr[1]
   end
 end
 
@@ -55,21 +55,21 @@ function compileassign(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr
       argtypes = map(x -> compile(x, data), type.args[1:(end-1)]) # function arg types
       tuples = [(args[i], argtypes[i]) for i in [1:length(args);]]
       typedargexprs = map(x -> :($(x[1])::$(x[2])), tuples)
-      quote 
+      quote
         function $(compile(expr.args[1], data))($(typedargexprs...))::$(compile(type.args[end], data))
-          $(compile(expr.args[2].args[2], data))  
+          $(compile(expr.args[2].args[2], data))
         end
-      end 
+      end
     else # handle function without typed arguments/return type
-      quote 
+      quote
         function $(compile(expr.args[1], data))($(compile(expr.args[2].args[1], data).args[2]...))
-            $(compile(expr.args[2].args[2], data))  
-        end 
-      end          
+            $(compile(expr.args[2].args[2], data))
+        end
+      end
     end
   else # handle non-function assignments
     # handle global assignments
-    if parent !== nothing && (parent.head == :program) 
+    if parent !== nothing && (parent.head == :program)
       if (typeof(expr.args[2]) == AExpr && expr.args[2].head == :initnext)
         push!(data["initnext"], expr)
       else
@@ -77,7 +77,7 @@ function compileassign(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr
       end
       :()
     # handle non-global assignments
-    else 
+    else
       if type !== nothing
         :($(compile(expr.args[1], data))::$(compile(type, data)) = compile(expr.args[2], data))
       else
@@ -108,7 +108,7 @@ function compiletypealias(expr::AExpr, data::Dict{String, Any})
   ), expr.args[2].args)
   quote
     struct $(name)
-      $(fields...) 
+      $(fields...)
     end
   end
 end
@@ -119,7 +119,7 @@ function compilecall(expr::AExpr, data::Dict{String, Any})
     :($(fnName)($(map(x -> compile(x, data), expr.args[2:end])...)))
   elseif fnName == :prev
     :($(Symbol(string(expr.args[2]) * "Prev"))($(map(compile, expr.args[3:end])...)))
-  elseif fnName != :(==)        
+  elseif fnName != :(==)
     :($(fnName)($(compile(expr.args[2], data)), $(compile(expr.args[3], data))))
   else
     :($(compile(expr.args[2], data)) == $(compile(expr.args[3], data)))
@@ -133,7 +133,7 @@ function compilelet(expr::AExpr, data::Dict{String, Any})
 end
 
 function compilecase(expr::AExpr, data::Dict{String, Any})
-  quote 
+  quote
     @match $(compile(expr.args[1], data)) begin
       $(map(x -> :($(compile(x.args[1], data)) => $(compile(x.args[2], data))), expr.args[2:end])...)
     end
@@ -146,7 +146,7 @@ function compileinitnext(data::Dict{String, Any})
       $(compileinitstate(data))
       $(map(x -> :($(compile(x.args[1], data)) = $(compile(x.args[2].args[1], data))), data["initnext"])...)
       $(map(x -> :($(compile(x.args[1], data)) = $(compile(x.args[2], data))), data["lifted"])...)
-      $(map(x -> :(state.$(Symbol(string(x.args[1])*"History"))[state.time] = $(compile(x.args[1], data))), 
+      $(map(x -> :(state.$(Symbol(string(x.args[1])*"History"))[state.time] = $(compile(x.args[1], data))),
             vcat(data["external"], data["initnext"], data["lifted"]))...)
       deepcopy(state)
     end
@@ -157,7 +157,7 @@ function compileinitnext(data::Dict{String, Any})
       state.time = state.time + 1
       $(map(x -> :($(compile(x.args[1], data)) = $(compile(x.args[2].args[2], data))), data["initnext"])...)
       $(map(x -> :($(compile(x.args[1], data)) = $(compile(x.args[2], data))), data["lifted"])...)
-      $(map(x -> :(state.$(Symbol(string(x.args[1])*"History"))[state.time] = $(compile(x.args[1], data))), 
+      $(map(x -> :(state.$(Symbol(string(x.args[1])*"History"))[state.time] = $(compile(x.args[1], data))),
             vcat(data["external"], data["initnext"], data["lifted"]))...)
       deepcopy(state)
     end
@@ -167,9 +167,9 @@ end
 
 # construct STATE struct
 function compilestatestruct(data::Dict{String, Any})
-  stateParamsInternal = map(expr -> :($(Symbol(string(expr.args[1]) * "History"))::Dict{Int64, $(haskey(data["types"], expr.args[1]) ? compile(data["types"][expr.args[1]], data) : Any)}), 
+  stateParamsInternal = map(expr -> :($(Symbol(string(expr.args[1]) * "History"))::Dict{Int64, $(haskey(data["types"], expr.args[1]) ? compile(data["types"][expr.args[1]], data) : Any)}),
                             vcat(data["initnext"], data["lifted"]))
-  stateParamsExternal = map(expr -> :($(Symbol(string(expr.args[1]) * "History"))::Dict{Int64, Union{$(compile(data["types"][expr.args[1]], data)), Nothing}}), 
+  stateParamsExternal = map(expr -> :($(Symbol(string(expr.args[1]) * "History"))::Dict{Int64, Union{$(compile(data["types"][expr.args[1]], data)), Nothing}}),
                             data["external"])
   quote
     mutable struct STATE
@@ -182,9 +182,9 @@ end
 
 # initialize state::STATE variable
 function compileinitstate(data::Dict{String, Any})
-  initStateParamsInternal = map(expr -> :(Dict{Int64, $(haskey(data["types"], expr.args[1]) ? compile(data["types"][expr.args[1]], data) : Any)}()), 
+  initStateParamsInternal = map(expr -> :(Dict{Int64, $(haskey(data["types"], expr.args[1]) ? compile(data["types"][expr.args[1]], data) : Any)}()),
                                 vcat(data["initnext"], data["lifted"]))
-  initStateParamsExternal = map(expr -> :(Dict{Int64, Union{$(compile(data["types"][expr.args[1]], data)), Nothing}}()), 
+  initStateParamsExternal = map(expr -> :(Dict{Int64, Union{$(compile(data["types"][expr.args[1]], data)), Nothing}}()),
                                 data["external"])
   initStateParams = [0, initStateParamsInternal..., initStateParamsExternal...]
   initState = :(state = STATE($(initStateParams...)))
@@ -196,15 +196,15 @@ end
 function compileprevfuncs(data::Dict{String, Any})
   prevFunctions = map(x -> quote
         function $(Symbol(string(x.args[1]) * "Prev"))(n::Int=1)::$(haskey(data["types"], x.args[1]) ? compile(data["types"][x.args[1]], data) : Any)
-          state.$(Symbol(string(x.args[1]) * "History"))[state.time - n >= 0 ? state.time - n : 0] 
+          state.$(Symbol(string(x.args[1]) * "History"))[state.time - n >= 0 ? state.time - n : 0]
         end
-        end, 
+        end,
   vcat(data["initnext"], data["lifted"]))
   prevFunctions = vcat(prevFunctions, map(x -> quote
         function $(Symbol(string(x.args[1]) * "Prev"))(n::Int=1)::Union{$(compile(data["types"][x.args[1]], data)), Nothing}
-          state.$(Symbol(string(x.args[1]) * "History"))[state.time - n >= 0 ? state.time - n : 0] 
+          state.$(Symbol(string(x.args[1]) * "History"))[state.time - n >= 0 ? state.time - n : 0]
         end
-        end, 
+        end,
   data["external"]))
   prevFunctions
 end
@@ -243,8 +243,8 @@ const builtInDict = Dict([
 "clickType"       =>  quote
                         struct Click
                           x::BigInt
-                          y::BigInt                    
-                        end     
+                          y::BigInt
+                        end
                       end,
 "range"           => quote
                       function range(start::BigInt, stop::BigInt)

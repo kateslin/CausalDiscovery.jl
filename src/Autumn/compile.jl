@@ -10,7 +10,7 @@ export compiletojulia, runprogram, compiletojavascript
 function compiletojulia(aexpr::AExpr)::Expr
 
   # dictionary containing types/definitions of global variables, for use in constructing init func.,
-  # next func., etcetera; the three categories of global variable are external, initnext, and lifted  
+  # next func., etcetera; the three categories of global variable are external, initnext, and lifted
   historydata = Dict([("external" => []), # :typedecl aexprs for all external variables
                ("initnext" => []), # :assign aexprs for all initnext variables
                ("lifted" => []), # :assign aexprs for all lifted variables
@@ -19,18 +19,18 @@ function compiletojulia(aexpr::AExpr)::Expr
   if (aexpr.head == :program)
     # handle AExpression lines
     lines = filter(x -> x !== :(), map(arg -> compile(arg, historydata, aexpr), aexpr.args))
-    
+
     # construct STATE struct and initialize state::STATE
     stateStruct = compilestatestruct(historydata)
     initStateStruct = compileinitstate(historydata)
-    
+
     # handle init, next, prev, and built-in functions
     initnextFunctions = compileinitnext(historydata)
     prevFunctions = compileprevfuncs(historydata)
     builtinFunctions = compilebuiltin()
 
     # remove empty lines
-    lines = filter(x -> x != :(), 
+    lines = filter(x -> x != :(),
             vcat(builtinFunctions, lines, stateStruct, initStateStruct, prevFunctions, initnextFunctions))
 
     # construct module
@@ -39,12 +39,12 @@ function compiletojulia(aexpr::AExpr)::Expr
         export init, next
         import Base.min
         using Distributions
-        using MLStyle: @match 
+        using MLStyle: @match
         $(lines...)
       end
-    end  
+    end
     expr.head = :toplevel
-    striplines(expr) 
+    striplines(expr)
   else
     throw(AutumnCompileError("AExpr Head != :program"))
   end
@@ -56,7 +56,7 @@ function compiletojavascript(aexpr::AExpr, observations)::String
                ("types" => Dict{Symbol, Any}([:click => :Click, :left => :KeyPress, :right => :KeyPress, :up => :KeyPress, :down => :KeyPress, :GRID_SIZE => :Int, :background => :String])), # map of global variable names (symbols) to types
                ("on" => []),
                ("objects" => []),
-               ("customFields" => Dict{Symbol, Any}())]) 
+               ("customFields" => Dict{Symbol, Any}())])
   if (aexpr.head == :program)
     # handle AExpr lines
     lines = map(arg -> compile_js(arg, metadata, aexpr), aexpr.args)
@@ -74,7 +74,7 @@ function compiletojavascript(aexpr::AExpr, observations)::String
     # construct library
     library = compilelibrary_js(metadata)
     #=
-    # construct harnesses 
+    # construct harnesses
     harnesses = compileharnesses_sk(metadata);
     # construct generators
     generators = compilegenerators_sk(metadata);
@@ -86,7 +86,7 @@ function compiletojavascript(aexpr::AExpr, observations)::String
       stateStruct,
       initFunction,
       nextFunction,
-      prevFunctions, 
+      prevFunctions,
       library, #=
       harnesses,
       generators =#
