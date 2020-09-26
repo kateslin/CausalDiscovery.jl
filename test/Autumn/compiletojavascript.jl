@@ -81,11 +81,17 @@ function test_compile_lambda()
   @test compile_js(aexpr, data) == "x => x + 1"
 end
 
+#
 function test_compile_typealias()
   data = construct_data()
   aexpr = au"""(type alias Position ((: x Int) (: y Int)))"""
-  print(compile_js(aexpr, data))
-  @test compile_js(aexpr, data) == "test"
+  @test compile_js(aexpr, data) == """class Position {
+  constructor (x, y){
+  this.x = x;
+this.y = y;
+  }
+}
+"""
 end
 
 
@@ -148,12 +154,13 @@ end
 @testset "compile" begin
   test_compile_if()
   test_compile_assign()
+  #compile external was removed from the code because it uses compile_type_decl
   # test_compile_external()
   test_compile_let()
   test_compile_list()
   test_compile_call()
   test_compile_field()
-  # test_compile_lambda()
+  test_compile_lambda()
   test_compile_typealias()
   # test_compile_particles()
   # test_compile_types_inferred()

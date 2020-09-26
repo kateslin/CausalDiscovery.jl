@@ -277,14 +277,22 @@ function compilelet(expr, data, parent)
   return output
 end
 
+function compilefieldalias(expr, data, parent)
+  obj = compile_js(expr.args[1], data)
+  fieldname = compile_js(expr.args[2], data)
+  "$(obj).$(fieldname)"
+end
+
 function compiletypealias(expr, data, parent)
-  print(data)
   name = string(expr.args[1]);
-  fields = map(field -> "$(compile_js(field.args[2], data)) $(compile_js(field.args[1], data));",
+  constructor = map(field -> "$(compile_js(field.args[1], data))", expr.args[2].args)
+  fields = map(field -> "this.$(compile_js(field.args[1], data)) = $(compile_js(field.args[1], data));",
            expr.args[2].args)
   """
   class $(name) {
+    constructor ($(join(constructor, ", "))){
     $(join(fields, "\n"))
+    }
   }
   """
 end
