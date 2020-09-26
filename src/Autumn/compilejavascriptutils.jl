@@ -271,12 +271,10 @@ function compileassign(expr, data, parent)
 end
 
 function compilelet(expr, data, parent)
-  print("Inside of compilelet\n")
-  print("EXPR IS: ", expr, "\n")
-  print("data IS: ", data, "\n")
-
   assignments = map(x -> compile_js(x, data), expr.args)
-  join(vcat(assignments[1:end-1], string("return ", assignments[end])), "\n");
+  let_statements = ["let " * string(x) for x in assignments[1:end-1]]
+  output = join(vcat(let_statements, string("return ", assignments[end], ";")), "\n")
+  return output
 end
 
 function compiletypealias(expr, data, parent)
@@ -360,7 +358,7 @@ function compileobject(expr, data, parent)
 
 
   """
-  struct $(name) extends Object {
+  struct $(name) Autnds Object {
     $(join(custom_fields, "\n"))
   }
   $(name) $(string(lowercase(name[1]), name[2:end]))($(join([custom_fields..., "Position origin"], ", "))) {
@@ -377,7 +375,7 @@ function compileon(expr, data, parent)
   response = expr.args[2]
   onData = (event, response)
   push!(data["on"], onData)
-  ""
+  "got here"
 end
 
 end

@@ -43,7 +43,7 @@ function test_compile_let()
   data = construct_data()
   aexpr = au"""(let ((= y 3) (= x y)) x)"""
 
-  @test compile_js(aexpr, data).args[end - 2: end] == "IMPLEMENT THIS"
+  @test compile_js(aexpr, data) == "let y = 3;\nlet x = y;\nreturn x;"
 end
 
 function test_compile_list()
@@ -123,7 +123,7 @@ end
   test_compile_if()
   test_compile_assign()
   # test_compile_external()
-  # test_compile_let()
+  test_compile_let()
   test_compile_list()
   test_compile_call()
   test_compile_field()
