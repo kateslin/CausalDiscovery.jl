@@ -48,13 +48,13 @@ function compile_js(expr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}
 end
 
 function compilestate_js(data)
-  stateHistories = map(expr -> "$(compile_js(data["varTypes"][expr.args[1]] in data["objects"] ? 
-                                  :Object 
-                                  : 
+  stateHistories = map(expr -> "$(compile_js(data["varTypes"][expr.args[1]] in data["objects"] ?
+                                  :Object
+                                  :
                                   data["varTypes"][expr.args[1]] in map(x -> [:List, x], data["objects"]) ?
                                   [:List, :Object]
                                   :
-                                  data["varTypes"][expr.args[1]], data))[ARR_BND] $(compile_js(expr.args[1], data))History;", 
+                                  data["varTypes"][expr.args[1]], data))[ARR_BND] $(compile_js(expr.args[1], data))History;",
   vcat(data["initnext"], data["lifted"]))
   GRID_SIZE = filter(x -> x.args[1] == :GRID_SIZE, data["lifted"])[1].args[2]
   """
@@ -75,17 +75,17 @@ end
 function compileinit_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                           collect(keys(data["varTypes"])))
-  historyInitNextDeclarations = map(x -> "$(compile_js(data["varTypes"][x.args[1]] in data["objects"] ? 
-                                            :Object 
-                                            : 
+  historyInitNextDeclarations = map(x -> "$(compile_js(data["varTypes"][x.args[1]] in data["objects"] ?
+                                            :Object
+                                            :
                                             data["varTypes"][x.args[1]] in map(x -> [:List, x], data["objects"]) ?
                                             [:List, :Object]
                                             :
-                                            data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2].args[1], data));", 
-                                     data["initnext"]) 
-  historyLiftedDeclarations = map(x -> "$(compile_js(data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2], data));", 
+                                            data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2].args[1], data));",
+                                     data["initnext"])
+  historyLiftedDeclarations = map(x -> "$(compile_js(data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2], data));",
                            data["lifted"])
-  historyInits = map(x -> "state.$(compile_js(x.args[1], data))History[0] = $(compile_js(x.args[1], data));", 
+  historyInits = map(x -> "state.$(compile_js(x.args[1], data))History[0] = $(compile_js(x.args[1], data));",
                      vcat(data["initnext"], data["lifted"]))
   """
   State state;
@@ -110,15 +110,15 @@ end
 function compilenext_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                            collect(keys(data["varTypes"])))
-  currHistValues = map(x -> "$(compile_js(data["varTypes"][x.args[1]] in data["objects"] ? 
-                              :Object 
-                              : 
+  currHistValues = map(x -> "$(compile_js(data["varTypes"][x.args[1]] in data["objects"] ?
+                              :Object
+                              :
                               data["varTypes"][x.args[1]] in map(x -> [:List, x], data["objects"]) ?
                               [:List, :Object]
                               :
-                              data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = state.$(compile_js(x.args[1], data))History[state.time];", 
+                              data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = state.$(compile_js(x.args[1], data))History[state.time];",
                        vcat(data["initnext"], data["lifted"]))
-  nextHistValues = map(x -> "state.$(compile_js(x.args[1], data))History[state.time] = $(compile_js(x.args[1], data));", 
+  nextHistValues = map(x -> "state.$(compile_js(x.args[1], data))History[state.time] = $(compile_js(x.args[1], data));",
                        vcat(data["initnext"], data["lifted"]))
   onClauses = map(x -> """if ($(compile_js(x[1], data))) {
                             $(compile_js(x[2], data))
@@ -126,7 +126,7 @@ function compilenext_js(data)
   """
   State next(State state, Click click, Left left, Right right, Up up, Down down) {
     $(join(currHistValues, "\n"))
-    
+
     $(join(onClauses, "\n"))
     state.time = state.time + 1;
     $(join(nextHistValues, "\n"))
@@ -144,19 +144,19 @@ end
 function compileprev_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                            collect(keys(data["varTypes"])))
-  prevFunctions = map(x -> """$(compile_js(data["varTypes"][x] in data["objects"] ? 
-                                  :Object 
-                                  : 
+  prevFunctions = map(x -> """$(compile_js(data["varTypes"][x] in data["objects"] ?
+                                  :Object
+                                  :
                                   data["varTypes"][x] in map(x -> [:List, x], data["objects"]) ?
                                   [:List, :Object]
                                   :
                                   data["varTypes"][x], data)) $(compile_js(x, data))PrevN(State state, int n) {
                                 return state.$(compile_js(x, data))History[state.time - n >= 0 ? state.time - n : 0];
                            }""", objectInstances)
-  
-  prevFunctionsNoArgs = map(x -> """$(compile_js(data["varTypes"][x] in data["objects"] ? 
-  :Object 
-  : 
+
+  prevFunctionsNoArgs = map(x -> """$(compile_js(data["varTypes"][x] in data["objects"] ?
+  :Object
+  :
   data["varTypes"][x] in map(x -> [:List, x], data["objects"]) ?
   [:List, :Object]
   :
@@ -166,30 +166,30 @@ function compileprev_js(data)
   """
   $(join(prevFunctions, "\n"))
   $(join(prevFunctionsNoArgs, "\n"))
-  """  
+  """
 end
 
 function compilelibrary_js(data)
-  
+
   """
   Object updateObjOrigin(Object object, Position origin) {
-    $(join(map(x -> 
+    $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
                 return new $(compile_js(x, data))($(join(vcat("origin=origin", "alive=object.alive", "type=object.type", "render=object.render", map(y -> "$(y)=object.$(y)", data["customFields"][x])),", ")));
-              } 
+              }
               """, data["objects"]), "\n"))
   }
   Object updateObjAlive(Object object, bit alive) {
-    $(join(map(x -> 
+    $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
                 return new $(compile_js(x, data))($(join(vcat("origin=object.origin", "alive=alive", "type=object.type", "render=object.render", map(y -> "$(y)=object.$(y)", data["customFields"][x])), ", ")));
-              } 
+              }
               """, data["objects"]), "\n"))
   }
   Object updateObjRender(Object object, Cell[ARR_BND] render) {
-    $(join(map(x -> 
+    $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
                 return new $(compile_js(x, data))($(join(vcat("origin=object.origin", "alive=object.alive", "type=object.type", "render=render", map(y -> "$(y)=object.$(y)", data["customFields"][x])),", ")));
@@ -289,7 +289,7 @@ function compiletypealias(expr, data, parent)
 end
 
 function compilelambda(expr, data, parent)
-  "$(compile_js(expr.args[1], data)) -> $(compile_js(expr.args[2], data))"
+  "$(compile_js(expr.args[1], data)) => $(compile_js(expr.args[2], data))"
 end
 
 function compilelist(expr, data, parent)
@@ -330,7 +330,7 @@ function compilefield(expr, data, parent)
   "$(obj).$(fieldname)"
 end
 
-# TODO: Figure out how to deal with typedecl since there's not typedecl in javascript 
+# TODO: Figure out how to deal with typedecl since there's not typedecl in javascript
 function compileobject(expr, data, parent)
   name = compile_js(expr.args[1], data)
   push!(data["objects"], expr.args[1])
