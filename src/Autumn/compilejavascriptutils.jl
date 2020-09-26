@@ -318,6 +318,8 @@ function compilecall(expr, data, parent)
     "$(name)($(join(args, ", ")))"
   elseif name == "prev"
     "$(compile_js(expr.args[2], data))Prev($(join(["state", map(x -> compile_js(x, data), expr.args[3:end])...], ", ")))"
+  elseif name in binaryOperators
+    "$(compile_js(expr.args[2], data)) $(name) $(compile_js(expr.args[3], data))"
   elseif name != "=="
     "$(name)($(compile_js(expr.args[2], data)), $(compile_js(expr.args[3], data)))"
   else

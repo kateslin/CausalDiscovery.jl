@@ -56,9 +56,15 @@ function test_compile_call()
   data = construct_data()
   aexpr = au"""(f 1 2 3) """
   @test compile_js(aexpr, data) == "f(1, 2, 3)"
+
   data = construct_data()
   aexpr = au"""(== 1 2)"""
   @test compile_js(aexpr, data) == "1 == 2"
+
+  data = construct_data()
+  aexpr = au"""(+ 1 2)"""
+  @test compile_js(aexpr, data) == "1 + 2"
+
 end
 
 function test_compile_field()
