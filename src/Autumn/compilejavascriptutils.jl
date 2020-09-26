@@ -278,11 +278,12 @@ function compilelet(expr, data, parent)
 end
 
 function compiletypealias(expr, data, parent)
+  print(data)
   name = string(expr.args[1]);
   fields = map(field -> "$(compile_js(field.args[2], data)) $(compile_js(field.args[1], data));",
            expr.args[2].args)
   """
-  struct $(name) {
+  class $(name) {
     $(join(fields, "\n"))
   }
   """

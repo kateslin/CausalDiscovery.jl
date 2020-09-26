@@ -67,6 +67,22 @@ function test_compile_field()
   @test compile_js(aexpr, data) == "position.x"
 end
 
+#seems like the issue is with (+ x 1) not being compiled correctly
+#lambda part works
+function test_compile_lambda()
+  data = construct_data()
+  aexpr = au"""(--> x (+ x 1))"""
+  @test compile_js(aexpr, data) == "x => x + 1"
+end
+
+function test_compile_typealias()
+  data = construct_data()
+  aexpr = au"""(type alias Position ((: x Int) (: y Int)))"""
+  print(compile_js(aexpr, data))
+  @test compile_js(aexpr, data) == "test"
+end
+
+
 
 function test_compile_particles()
   a = au"""(program
@@ -131,6 +147,8 @@ end
   test_compile_list()
   test_compile_call()
   test_compile_field()
+  # test_compile_lambda()
+  test_compile_typealias()
   # test_compile_particles()
   # test_compile_types_inferred()
 end
