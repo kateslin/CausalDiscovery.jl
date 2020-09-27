@@ -96,7 +96,7 @@ end
 
 function test_compile_object()
   data = construct_data()
-  aexpr = """(: particles (List Particle))"""
+  aexpr = au"""(object Food (Cell 0 0 "red"))"""
   print(compile_js(aexpr, data))
 end
 
@@ -156,17 +156,17 @@ end
 
 
 @testset "compile" begin
-  test_compile_if()
-  test_compile_assign()
+  # test_compile_if()
+  # test_compile_assign()
   #compile external was removed from the code because it uses compile_type_decl
   # test_compile_external()
-  test_compile_let()
-  test_compile_list()
-  test_compile_call()
-  test_compile_field()
-  test_compile_lambda()
-  test_compile_typealias()
-  test_compile_object()
+  # test_compile_let()
+  # test_compile_list()
+  # test_compile_call()
+  # test_compile_field()
+  # test_compile_lambda()
+  # test_compile_typealias()
+  # test_compile_object()
   # test_compile_particles()
   # test_compile_types_inferred()
 end

@@ -12,6 +12,11 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 
 function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
   arr = [expr.head, expr.args...]
+  print(expr.head)
+  print("\n")
+  if (expr.head == :object)
+    print(arr)
+  end
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
@@ -308,6 +313,8 @@ end
 # TODO: Confirm this makes sense for all test cases
 function compilecall(expr, data, parent)
   name = compile_js(expr.args[1], data);
+  print(name)
+  print("\n")
   args = map(x -> compile_js(x, data), expr.args[2:end]);
   objectNames = map(x -> compile_js(x, data), data["objects"])
   if name == "clicked"
@@ -368,7 +375,6 @@ function compileobject(expr, data, parent)
                                     return new $(name)($(join(vcat(string(x[2], "=", x[2]), filter(y -> split(y, "=")[1] != x[2], update_obj_field_assigns)), ", ")));
                                   }
                                   """, update_obj_fields)
-
 
   """
   struct $(name) Autnds Object {
