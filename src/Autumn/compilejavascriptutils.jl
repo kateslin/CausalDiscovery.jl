@@ -12,6 +12,7 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 
 function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
   arr = [expr.head, expr.args...]
+  print("ARR: ", arr)
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
@@ -308,8 +309,10 @@ end
 # TODO: Confirm this makes sense for all test cases
 function compilecall(expr, data, parent)
   name = compile_js(expr.args[1], data);
+
   args = map(x -> compile_js(x, data), expr.args[2:end]);
   objectNames = map(x -> compile_js(x, data), data["objects"])
+  print("OBJECT NAMES: ", objectNames, "\n")
   if name == "clicked"
     "clicked(click, $(join(args, ", ")))"
   elseif name == "Position"
@@ -322,13 +325,17 @@ function compilecall(expr, data, parent)
     end
   elseif name in objectNames
     "$(lowercase(name[1]))$(name[2:end])($(join(args, "\n")))"
+  elseif name == "object"
+    compileobject(expr, data, parent)
   elseif !(name in binaryOperators) && name != "prev"
+    print("name not in binaryops and is not prev\n")
     "$(name)($(join(args, ", ")))"
   elseif name == "prev"
     "$(compile_js(expr.args[2], data))Prev($(join(["state", map(x -> compile_js(x, data), expr.args[3:end])...], ", ")))"
   elseif name in binaryOperators
     "$(compile_js(expr.args[2], data)) $(name) $(compile_js(expr.args[3], data))"
   elseif name != "=="
+    print("Going into other\n")
     "$(name)($(compile_js(expr.args[2], data)), $(compile_js(expr.args[3], data)))"
   else
     "$(compile_js(expr.args[2], data)) == $(compile_js(expr.args[3], data))"

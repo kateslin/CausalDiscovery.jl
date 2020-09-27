@@ -94,7 +94,11 @@ this.y = y;
 """
 end
 
-
+function test_compile_object()
+  data = construct_data()
+  aexpr = au"""(object Food (Cell 0 0 "red"))"""
+  @test compile_js(aexpr, data) == "x => x + 1"
+end
 
 function test_compile_particles()
   a = au"""(program
@@ -152,6 +156,7 @@ end
 
 
 @testset "compile" begin
+  test_compile_object()
   test_compile_if()
   test_compile_assign()
   #compile external was removed from the code because it uses compile_type_decl
