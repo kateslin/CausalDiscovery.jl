@@ -5,6 +5,12 @@ using MLStyle: @match
 
 export compile_js, compileinit_js, compilestate_js, compilenext_js, compileprev_js, compilelibrary_js, compileharnesses_js, compilegenerators_js
 
+"Autumn Compile Error"
+struct AutumnCompileError <: Exception
+  msg
+end
+AutumnCompileError() = AutumnCompileError("")
+
 # binary operators
 binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), :!=, :%, :&&])
 
@@ -12,11 +18,7 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 
 function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
   arr = [expr.head, expr.args...]
-  print(expr.head)
-  print("\n")
-  if (expr.head == :object)
-    print(arr)
-  end
+
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
@@ -28,7 +30,8 @@ function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, N
     [:field, args...] => compilefield(expr, data, parent)
     [:object, args...] => compileobject(expr, data, parent)
     [:on, args...] => compileon(expr, data, parent)
-    [args...] => throw(AutumnError(string("Invalid AExpr Head: ", expr.head))) # if expr head is not one of the above, throw error
+    [:typedecl, args...] => compiletypedecl(expr, data, parent)
+    [args...] => throw(AutumnCompileError(string("Invalid AExpr Head: ", expr.head))) # if expr head is not one of the above, throw error
   end
 end
 
@@ -275,6 +278,10 @@ function compileassign(expr, data, parent)
   end
 end
 
+function compiletypedecl(expr, data, parent)
+  compile_js(expr.args[1], data)
+end
+
 function compilelet(expr, data, parent)
   assignments = map(x -> compile_js(x, data), expr.args)
   let_statements = ["let " * string(x) for x in assignments[1:end-1]]
@@ -313,10 +320,10 @@ end
 # TODO: Confirm this makes sense for all test cases
 function compilecall(expr, data, parent)
   name = compile_js(expr.args[1], data);
-  print(name)
-  print("\n")
+
   args = map(x -> compile_js(x, data), expr.args[2:end]);
   objectNames = map(x -> compile_js(x, data), data["objects"])
+  # print("OBJECT NAMES: ", objectNames, "\n")
   if name == "clicked"
     "clicked(click, $(join(args, ", ")))"
   elseif name == "Position"
@@ -329,13 +336,17 @@ function compilecall(expr, data, parent)
     end
   elseif name in objectNames
     "$(lowercase(name[1]))$(name[2:end])($(join(args, "\n")))"
+  elseif name == "object"
+    "$(compileobject(expr, data, parent))"
   elseif !(name in binaryOperators) && name != "prev"
+    print("name not in binaryops and is not prev\n")
     "$(name)($(join(args, ", ")))"
   elseif name == "prev"
     "$(compile_js(expr.args[2], data))Prev($(join(["state", map(x -> compile_js(x, data), expr.args[3:end])...], ", ")))"
   elseif name in binaryOperators
     "$(compile_js(expr.args[2], data)) $(name) $(compile_js(expr.args[3], data))"
   elseif name != "=="
+    print("Going into other\n")
     "$(name)($(compile_js(expr.args[2], data)), $(compile_js(expr.args[3], data)))"
   else
     "$(compile_js(expr.args[2], data)) == $(compile_js(expr.args[3], data))"
@@ -350,42 +361,45 @@ end
 
 # TODO: Figure out how to deal with typedecl since there's not typedecl in javascript
 function compileobject(expr, data, parent)
-  print("compile obj\n")
-  name = compile_js(expr.args[1], data)
+  name = String.(expr.args[2])
   push!(data["objects"], expr.args[1])
-  print(name)
   custom_fields = map(field ->
-                      "$(compile_js(field.args[2], data)) $(compile_js(field.args[1], data));",
-                      filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[2:end]))
+                      "$(compile_js(field.args[1], data))",
+                      filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[3:end]))
   custom_field_names = map(field -> "$(compile_js(field.args[1], data))",
-                           filter(x -> (x isa AExpr && x.head == :typedecl), expr.args[2:end]))
+                           filter(x -> (x isa AExpr && x.head == :typedecl), expr.args[3:end]))
   data["customFields"][expr.args[1]] = custom_field_names;
   custom_field_assgns = map(field -> "$(compile_js(field.args[1], data))=$(compile_js(field.args[1], data))",
-                            filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[2:end]))
-  rendering = compile_js(filter(x -> (typeof(x) != AExpr) || (x.head != :typedecl), expr.args[2:end])[1], data)
-  renderingIsList = filter(x -> (typeof(x) != AExpr) || (x.head != :typedecl), expr.args[2:end])[1].head == :list
+                            filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[3:end]))
+  rendering = compile_js(filter(x -> (typeof(x) != AExpr) || (x.head != :typedecl), expr.args[3:end])[1], data)
+  renderingIsList = filter(x -> (typeof(x) != AExpr) || (x.head != :typedecl), expr.args[3:end])[1].head == :list
   rendering = renderingIsList ? rendering : "{$(rendering)}"
 
   # compile updateObj functions, and move/rotate/nextWater/nextLiquid
   update_obj_fields = map(x -> [compile_js(x.args[2], data), compile_js(x.args[1], data)],
-                               filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[2:end]))
+                               filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[3:end]))
   update_obj_field_assigns = map(x -> "$(x[2])=object.$(x[2])", update_obj_fields)
   update_obj_functions = map(x -> """
-                                  Object function updateObj$(name)$(string(uppercase(x[2][1]), x[2][2:end]))(Object object, $(x[1]) $(x[2])) {
-                                    return new $(name)($(join(vcat(string(x[2], "=", x[2]), filter(y -> split(y, "=")[1] != x[2], update_obj_field_assigns)), ", ")));
+                                  function updateObj$(name)$(string(uppercase(x[2][1]), x[2][2:end]))(object, $(x[2])) {
+                                    return new $(name)($(join(vcat(string(x[2]), filter(y -> split(y, "=")[1] != x[2], update_obj_field_assigns)), ", ")), object.origin);
                                   }
                                   """, update_obj_fields)
-
   """
-  struct $(name) Autnds Object {
-    $(join(custom_fields, "\n"))
+  class $(name){
+    constructor($(length(custom_fields) == 0 ? "origin" : join(custom_fields, ", ") * ", origin")){
+    $(join(map(x -> string("this.", x, " = ", x, ";"), custom_field_names), "\n"))$(length(custom_field_names) == 1 ? "\n" : "")this.origin = origin;
+    this.type = $(name);
+    this.alive = true;
+    this.render = $(rendering);
+
+    }
   }
-  $(name) $(string(lowercase(name[1]), name[2:end]))($(join([custom_fields..., "Position origin"], ", "))) {
-    return new $(name)($(join([custom_field_assgns..., "origin=origin", string("type=\"", name, "\""), "alive=true", "render=$(rendering)"], ", ")));
+
+  function $(string(lowercase(name[1]), name[2:end]))($(join([custom_fields..., "origin"], ", "))) {
+    return new $(name)($(join([custom_fields..., "origin"], ", ")));
   }
 
   $(join(update_obj_functions, "\n"))
-
   """
 end
 

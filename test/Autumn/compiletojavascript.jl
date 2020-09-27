@@ -7,7 +7,8 @@ function construct_data()
         ("lifted" => []),
         ("types" => Dict()),
         ("on" => []),
-        ("objects" => [])])
+        ("objects" => []),
+        ("customFields" =>  Dict())])
 end
 
 mod = nothing
@@ -97,7 +98,46 @@ end
 function test_compile_object()
   data = construct_data()
   aexpr = au"""(object Food (Cell 0 0 "red"))"""
-  print(compile_js(aexpr, data))
+  expected = """class Food{
+  constructor(origin){
+  this.origin = origin;
+  this.type = Food;
+  this.alive = true;
+  this.render = {new Cell(position=new Position(x=0, y=0), color="red")};
+
+  }
+}
+
+function food(origin) {
+  return new Food(origin);
+}
+
+
+"""
+  @test expected == compile_js(aexpr, data)
+  data = construct_data()
+  aexpr = au"""(object Light (: on Bool) (Cell 0 0 (if on then "yellow" else "black")))"""
+  expected = """class Light{
+  constructor(on, origin){
+  this.on = on;
+this.origin = origin;
+  this.type = Light;
+  this.alive = true;
+  this.render = {new Cell(position=new Position(x=0, y=0), color=on ? "yellow" : "black")};
+
+  }
+}
+
+function light(on, origin) {
+  return new Light(on, origin);
+}
+
+function updateObjLightOn(object, on) {
+  return new Light(on, object.origin);
+}
+
+"""
+  @test expected == compile_js(aexpr, data)
 end
 
 function test_compile_particles()
@@ -156,17 +196,17 @@ end
 
 
 @testset "compile" begin
-  # test_compile_if()
-  # test_compile_assign()
-  #compile external was removed from the code because it uses compile_type_decl
+  test_compile_if()
+  test_compile_assign()
+  # compile external was removed from the code because it uses compile_type_decl
   # test_compile_external()
-  # test_compile_let()
-  # test_compile_list()
-  # test_compile_call()
-  # test_compile_field()
-  # test_compile_lambda()
-  # test_compile_typealias()
-  # test_compile_object()
+  test_compile_let()
+  test_compile_list()
+  test_compile_call()
+  test_compile_field()
+  test_compile_lambda()
+  test_compile_typealias()
+  test_compile_object()
   # test_compile_particles()
   # test_compile_types_inferred()
 end
