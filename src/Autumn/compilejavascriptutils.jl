@@ -18,7 +18,6 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 
 function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
   arr = [expr.head, expr.args...]
-
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
@@ -31,6 +30,8 @@ function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, N
     [:object, args...] => compileobject(expr, data, parent)
     [:on, args...] => compileon(expr, data, parent)
     [:typedecl, args...] => compiletypedecl(expr, data, parent)
+    [:external, args...] => compileexternal(expr, data, parent)
+    [:case, args...] => compilecase(expr, data, parent)
     [args...] => throw(AutumnCompileError(string("Invalid AExpr Head: ", expr.head))) # if expr head is not one of the above, throw error
   end
 end
@@ -56,26 +57,20 @@ function compile_js(expr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}
 end
 
 function compilestate_js(data)
-  stateHistories = map(expr -> "$(compile_js(data["varTypes"][expr.args[1]] in data["objects"] ?
-                                  :Object
-                                  :
-                                  data["varTypes"][expr.args[1]] in map(x -> [:List, x], data["objects"]) ?
-                                  [:List, :Object]
-                                  :
-                                  data["varTypes"][expr.args[1]], data))[ARR_BND] $(compile_js(expr.args[1], data))History;",
+  stateHistories = map(expr -> "this.$(compile_js(expr.args[1], data))History = {};",
   vcat(data["initnext"], data["lifted"]))
   GRID_SIZE = filter(x -> x.args[1] == :GRID_SIZE, data["lifted"])[1].args[2]
   """
-  int GRID_SIZE = $(GRID_SIZE);
-  struct State {
-    int time;
+  GRID_SIZE = $(GRID_SIZE);
+  function State() {
+    this.time = {};
     $(join(stateHistories, "\n"))
-    Click[ARR_BND] clickHistory;
-    Left[ARR_BND] leftHistory;
-    Right[ARR_BND] rightHistory;
-    Up[ARR_BND] upHistory;
-    Down[ARR_BND] downHistory;
-    Scene scene;
+    this.clickHistory = {};
+    this.leftHistory = {};
+    this.rightHistory = {};
+    this.upHistory = {};
+    this.downHistory = {};
+    this.scene = {};
   }
   """
 end
@@ -83,26 +78,17 @@ end
 function compileinit_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                           collect(keys(data["varTypes"])))
-  historyInitNextDeclarations = map(x -> "$(compile_js(data["varTypes"][x.args[1]] in data["objects"] ?
-                                            :Object
-                                            :
-                                            data["varTypes"][x.args[1]] in map(x -> [:List, x], data["objects"]) ?
-                                            [:List, :Object]
-                                            :
-                                            data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2].args[1], data));",
+  historyInitNextDeclarations = map(x -> "$(compile_js(x.args[1], data)) = $(compile_js(x.args[2].args[1], data));",
                                      data["initnext"])
-  historyLiftedDeclarations = map(x -> "$(compile_js(data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = $(compile_js(x.args[2], data));",
+  historyLiftedDeclarations = map(x -> "$(compile_js(x.args[1], data)) = $(compile_js(x.args[2], data));",
                            data["lifted"])
   historyInits = map(x -> "state.$(compile_js(x.args[1], data))History[0] = $(compile_js(x.args[1], data));",
                      vcat(data["initnext"], data["lifted"]))
   """
-  State state;
-  State init() {
-    int time = 0;
+  state = State();
+  function init() {
     $(join(historyInitNextDeclarations, "\n"))
-    $(join(historyLiftedDeclarations, "\n"))
-	  state = new State();
-    state.time = time;
+    state.time = 0;
     $(join(historyInits, "\n"))
     state.clickHistory[0] = null;
     state.leftHistory[0] = null;
@@ -132,7 +118,7 @@ function compilenext_js(data)
                             $(compile_js(x[2], data))
                           }""", data["on"])
   """
-  State next(State state, Click click, Left left, Right right, Up up, Down down) {
+  function next(state, click, left, right, up, down) {
     $(join(currHistValues, "\n"))
 
     $(join(onClauses, "\n"))
@@ -241,24 +227,24 @@ function compileassign(expr, data, parent)
   # type = data["types"][expr.args[1]]
   if (typeof(expr.args[2]) == AExpr && expr.args[2].head == :fn)
     args = map(x -> compile_js(x, data), expr.args[2].args[1].args) # function args
-    argtypes = map(x -> compile_js(x in data["objects"] ?
-                        :Object
-                        :
-                        (x in data["objects"]) ?
-                        [:List, :Object]
-                        :
-                        x, data), type.args[1:(end-1)]) # function arg types
-    tuples = [(args[i], argtypes[i]) for i in [1:length(args);]]
-    typedargs = map(x -> "$(x[2]) $(x[1])", tuples)
-    returntype = compile_js(type.args[end] in data["objects"] ?
-                            :Object
-                            :
-                            (type.args[end] in data["objects"]) ?
-                            [:List, :Object]
-                            :
-                            type.args[end], data)
+    # argtypes = map(x -> compile_js(x in data["objects"] ?
+    #                     :Object
+    #                     :
+    #                     (x in data["objects"]) ?
+    #                     [:List, :Object]
+    #                     :
+    #                     x, data), type.args[1:(end-1)]) # function arg types
+    # tuples = [(args[i], argtypes[i]) for i in [1:length(args);]]
+    # typedargs = map(x -> "$(x[2]) $(x[1])", tuples)
+    # returntype = compile_js(type.args[end] in data["objects"] ?
+    #                         :Object
+    #                         :
+    #                         (type.args[end] in data["objects"]) ?
+    #                         [:List, :Object]
+    #                         :
+    #                         type.args[end], data)
     """
-    $(returntype) $(compile_js(expr.args[1], data))($(join(typedargs, ", "))) {
+     $(compile_js(expr.args[1], data))($(join(args, ", "))) {
       $(compile_js(expr.args[2].args[2], data));
     }
     """
@@ -268,17 +254,22 @@ function compileassign(expr, data, parent)
       if (typeof(expr.args[2]) == AExpr && expr.args[2].head == :initnext)
         push!(data["initnext"], expr)
       else
+        # push!(data["varTypes"], expr.args[1] => compile_js(expr.args[2], data))
+        print(expr)
+        print(expr.args)
         push!(data["lifted"], expr)
       end
       ""
     # handle non-global assignments
     else
+      push!(data["objects"], expr.args[1])
       "$(compile_js(expr.args[1], data)) = $(compile_js(expr.args[2], data));"
     end
   end
 end
 
 function compiletypedecl(expr, data, parent)
+  push!(data["varTypes"], expr.args[1] => expr.args[2])
   compile_js(expr.args[1], data)
 end
 
@@ -300,6 +291,9 @@ function compiletypealias(expr, data, parent)
   constructor = map(field -> "$(compile_js(field.args[1], data))", expr.args[2].args)
   fields = map(field -> "this.$(compile_js(field.args[1], data)) = $(compile_js(field.args[1], data));",
            expr.args[2].args)
+  print(expr.args[2])
+  print("\n")
+  push!(data["varTypes"], expr.args[1] => name)
   """
   class $(name) {
     constructor ($(join(constructor, ", "))){
@@ -362,7 +356,6 @@ end
 # TODO: Figure out how to deal with typedecl since there's not typedecl in javascript
 function compileobject(expr, data, parent)
   name = String.(expr.args[2])
-  push!(data["objects"], expr.args[1])
   custom_fields = map(field ->
                       "$(compile_js(field.args[1], data))",
                       filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[3:end]))
@@ -409,6 +402,18 @@ function compileon(expr, data, parent)
   onData = (event, response)
   push!(data["on"], onData)
   "got here"
+end
+
+function compileexternal(expr, data, parent)
+  print(data)
+  if !(expr.args[1] in data["external"])
+    push!(data["external"], expr.args[1])
+  end
+  compiletypedecl(expr.args[1], data, expr)
+end
+
+function compilecase(expr, data, parent)
+  print("Compile case\n")
 end
 
 end

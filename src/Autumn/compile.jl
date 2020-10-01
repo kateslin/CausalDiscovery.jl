@@ -53,7 +53,7 @@ end
 function compiletojavascript(aexpr::AExpr, observations)::String
   metadata = Dict([("initnext" => []), # :assign aexprs for all initnext variables
                ("lifted" => []), # :assign aexprs for all lifted variables
-               ("types" => Dict{Symbol, Any}([:click => :Click, :left => :KeyPress, :right => :KeyPress, :up => :KeyPress, :down => :KeyPress, :GRID_SIZE => :Int, :background => :String])), # map of global variable names (symbols) to types
+               ("varTypes" => Dict{Symbol, Any}([:click => :Click, :left => :KeyPress, :right => :KeyPress, :up => :KeyPress, :down => :KeyPress, :GRID_SIZE => :Int, :background => :String])), # map of global variable names (symbols) to types
                ("on" => []),
                ("objects" => []),
                ("customFields" => Dict{Symbol, Any}())])
@@ -63,16 +63,20 @@ function compiletojavascript(aexpr::AExpr, observations)::String
 
     # construct state struct
     stateStruct = compilestate_js(metadata)
+    print("after state\n")
 
     # construct init and next functions
     initFunction = compileinit_js(metadata)
+    print("after init\n")
     nextFunction = compilenext_js(metadata)
+    print("after next\n")
 
     # construct prev functions
     prevFunctions = compileprev_js(metadata)
-
+    print("after prev\n")
+    print(metadata)
     # construct library
-    library = compilelibrary_js(metadata)
+    # library = compilelibrary_js(metadata)
     #=
     # construct harnesses
     harnesses = compileharnesses_sk(metadata);
@@ -86,8 +90,8 @@ function compiletojavascript(aexpr::AExpr, observations)::String
       stateStruct,
       initFunction,
       nextFunction,
-      prevFunctions,
-      library, #=
+      prevFunctions,#=
+      library, 
       harnesses,
       generators =#
     ], "\n")
