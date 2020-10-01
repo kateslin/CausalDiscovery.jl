@@ -3,7 +3,7 @@ module CompileJavascriptUtils
 using ..AExpressions
 using MLStyle: @match
 
-export compile_js, compileinit_js, compilestate_js, compilenext_js, compileprev_js, compilelibrary_js, compileharnesses_js, compilegenerators_js
+export compile_js, compileinit_js, compilestate_js, compilenext_js, compileprev_js, compilelibrary_js, compileharnesses_js, compilegenerators_js, compile_builtin
 
 "Autumn Compile Error"
 struct AutumnCompileError <: Exception
@@ -18,6 +18,7 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 
 function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
   arr = [expr.head, expr.args...]
+  print(expr)
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
@@ -104,13 +105,7 @@ end
 function compilenext_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                            collect(keys(data["varTypes"])))
-  currHistValues = map(x -> "$(compile_js(data["varTypes"][x.args[1]] in data["objects"] ?
-                              :Object
-                              :
-                              data["varTypes"][x.args[1]] in map(x -> [:List, x], data["objects"]) ?
-                              [:List, :Object]
-                              :
-                              data["varTypes"][x.args[1]], data)) $(compile_js(x.args[1], data)) = state.$(compile_js(x.args[1], data))History[state.time];",
+  currHistValues = map(x -> "$(compile_js(x.args[1], data)) = state.$(compile_js(x.args[1], data))History[state.time];",
                        vcat(data["initnext"], data["lifted"]))
   nextHistValues = map(x -> "state.$(compile_js(x.args[1], data))History[state.time] = $(compile_js(x.args[1], data));",
                        vcat(data["initnext"], data["lifted"]))
@@ -193,6 +188,22 @@ function compilelibrary_js(data)
   $(library)
   """
 end
+function compile_builtin()
+  """class Position {
+  constructor(x, y){
+    this.x = x;
+    this.y = y;
+  }
+}
+class Cell{
+  constructor(position, color){
+    this.position = position;
+    this.color = color;
+  }
+}
+"""
+end
+
 #=
 observations: list of ((Click, Left, Right, Up, Down), [list of cells])
 =#
@@ -366,7 +377,7 @@ function compileobject(expr, data, parent)
                             filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[3:end]))
   rendering = compile_js(filter(x -> (typeof(x) != AExpr) || (x.head != :typedecl), expr.args[3:end])[1], data)
   renderingIsList = filter(x -> (typeof(x) != AExpr) || (x.head != :typedecl), expr.args[3:end])[1].head == :list
-  rendering = renderingIsList ? rendering : "{$(rendering)}"
+  rendering = renderingIsList ? rendering : "[$(rendering)]"
 
   # compile updateObj functions, and move/rotate/nextWater/nextLiquid
   update_obj_fields = map(x -> [compile_js(x.args[2], data), compile_js(x.args[1], data)],
@@ -410,10 +421,6 @@ function compileexternal(expr, data, parent)
     push!(data["external"], expr.args[1])
   end
   compiletypedecl(expr.args[1], data, expr)
-end
-
-function compilecase(expr, data, parent)
-  print("Compile case\n")
 end
 
 end

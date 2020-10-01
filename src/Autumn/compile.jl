@@ -70,7 +70,7 @@ function compiletojavascript(aexpr::AExpr, observations)::String
     print("after init\n")
     nextFunction = compilenext_js(metadata)
     print("after next\n")
-
+    builtin = compile_builtin()
     # construct prev functions
     prevFunctions = compileprev_js(metadata)
     print("after prev\n")
@@ -84,14 +84,15 @@ function compiletojavascript(aexpr::AExpr, observations)::String
     generators = compilegenerators_sk(metadata);
     =#
     join([
-      "int ARR_BND = 10;",
-      "int STR_BND = 20;",
+      "ARR_BND = 10;",
+      "STR_BND = 20;",
+      builtin,
       lines...,
       stateStruct,
       initFunction,
       nextFunction,
-      prevFunctions,#=
-      library, 
+      prevFunctions, #=
+      library,
       harnesses,
       generators =#
     ], "\n")

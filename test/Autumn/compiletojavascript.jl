@@ -155,11 +155,32 @@ function test_compile_particles()
   (on clicked (= particles (addObj (prev particles) (Particle (Position (.. click x) (.. click y))))))
   )"""
   print(compiletojavascript(a, construct_data()))
-  print("\n");
-  # @test string(compiletojavascript(a)) == "\$(Expr(:toplevel, :(module CompiledProgram\n  export init, next\n  import Base.min\n  using Distributions\n  using MLStyle: @match\n  begin\n      function occurred(click)\n          click !== nothing\n      end\n  end\n  begin\n      function uniformChoice(freePositions)\n          freePositions[rand(Categorical(ones(length(freePositions)) / length(freePositions)))]\n      end\n  end\n  begin\n      function uniformChoice(freePositions, n)\n          map((idx->begin\n                      freePositions[idx]\n                  end), rand(Categorical(ones(length(freePositions)) / length(freePositions)), n))\n      end\n  end\n  begin\n      function min(arr)\n          min(arr...)\n      end\n  end\n  begin\n      struct Click\n          x::BigInt\n          y::BigInt\n      end\n  end\n  begin\n      function range(start::BigInt, stop::BigInt)\n          [start:stop;]\n      end\n  end\n  begin\n      struct Position\n          x::Int\n          y::Int\n      end\n  end\n  begin\n      struct Particle\n          position::Position\n      end\n  end\n  begin\n      function isFree(position::Position)::Bool\n          length(filter((particle->begin\n                              particle.position == position\n                          end), particlesPrev())) == 0\n      end\n  end\n  begin\n      function isWithinBounds(position::Position)::Bool\n          (position.x >= 0) & ((position.x < GRID_SIZE) & ((position.y >= 0) & (position.y < GRID_SIZE)))\n      end\n  end\n  begin\n      function adjacentPositions(position::Position)::Array{Position}\n          begin\n              x = position.x\n              y = position.y\n              positions = filter(isWithinBounds, [Position(x + 1, y), Position(x - 1, y), Position(x, y + 1), Position(x, y - 1)])\n              positions\n          end\n      end\n  end\n  begin\n      function nextParticle(particle::Particle)::Particle\n          begin\n              freePositions = filter(isFree, adjacentPositions(particle.position))\n              begin\n                  @match freePositions begin\n                          [] => particle\n                          _ => Particle(uniformChoice(freePositions))\n                      end\n              end\n          end\n      end\n  end\n  begin\n      function particleGen(initPosition::Position)::Particle\n          Particle(initPosition)\n      end\n  end\n  begin\n      mutable struct STATE\n          time::Int\n          particlesHistory::Dict{Int64, Array{Particle}}\n          GRID_SIZEHistory::Dict{Int64, Int}\n          nparticlesHistory::Dict{Int64, Int}\n          clickHistory::Dict{Int64, Union{Click, Nothing}}\n      end\n  end\n  state = STATE(0, Dict{Int64, Array{Particle}}(), Dict{Int64, Int}(), Dict{Int64, Int}(), Dict{Int64, Union{Click, Nothing}}())\n  begin\n      function particlesPrev(n::Int=1)::Array{Particle}\n          state.particlesHistory[if state.time - n >= 0\n                  state.time - n\n              else\n                  0\n              end]\n      end\n  end\n  begin\n      function GRID_SIZEPrev(n::Int=1)::Int\n          state.GRID_SIZEHistory[if state.time - n >= 0\n                  state.time - n\n              else\n                  0\n              end]\n      end\n  end\n  begin\n      function nparticlesPrev(n::Int=1)::Int\n          state.nparticlesHistory[if state.time - n >= 0\n                  state.time - n\n              else\n                  0\n              end]\n      end\n  end\n  begin\n      function clickPrev(n::Int=1)::Union{Click, Nothing}\n          state.clickHistory[if state.time - n >= 0\n                  state.time - n\n              else\n                  0\n              end]\n      end\n  end\n  begin\n      function init(click::Union{Click, Nothing})::STATE\n          state = STATE(0, Dict{Int64, Array{Particle}}(), Dict{Int64, Int}(), Dict{Int64, Int}(), Dict{Int64, Union{Click, Nothing}}())\n          particles = []\n          GRID_SIZE = 16\n          nparticles = length(particles)\n          state.clickHistory[state.time] = click\n          state.particlesHistory[state.time] = particles\n          state.GRID_SIZEHistory[state.time] = GRID_SIZE\n          state.nparticlesHistory[state.time] = nparticles\n          deepcopy(state)\n      end\n  end\n  begin\n      function next(old_state::STATE, click::Union{Click, Nothing})::STATE\n          global state = deepcopy(old_state)\n          state.time = state.time + 1\n          particles = if occurred(click)\n                  push!(particlesPrev(), particleGen(Position(1, 1)))\n              else\n                  map(nextParticle, particlesPrev())\n              end\n          GRID_SIZE = 16\n          nparticles = length(particles)\n          state.clickHistory[state.time] = click\n          state.particlesHistory[state.time] = particles\n          state.GRID_SIZEHistory[state.time] = GRID_SIZE\n          state.nparticlesHistory[state.time] = nparticles\n          deepcopy(state)\n      end\n  end\n  end)))"
-  # global mod = eval(compiletojavascript(a))
 end
 #
+
+function test_compile_ants()
+  a = au"""(program
+  (= GRID_SIZE 16)
+
+  (object Ant (Cell 0 0 "gray"))
+  (object Food (Cell 0 0 "red"))
+
+  (: ants (List Ant))
+  (= ants (initnext (map Ant (randomPositions GRID_SIZE 6))
+                    (updateObj (prev ants) nextAnt)))
+
+  (: foods (List Food))
+  (= foods (initnext (list)
+                     (updateObj (prev foods) (--> obj (if (== (distance obj (closest obj Ant)) 0)
+					                                   then (removeObj obj)
+		  									           else obj)))))
+
+  (on clicked (= foods (addObj (prev foods) (map Food (randomPositions GRID_SIZE 4)))))
+
+  (: nextAnt (-> Ant Ant))
+  (= nextAnt (fn (ant) (move ant (unitVector ant (closest ant Food))))))"""
+  print(compiletojavascript(a, construct_data()))
+end
 
 
 function test_compile_types_inferred()
@@ -184,5 +205,6 @@ end
   # test_compile_typealias()
   # test_compile_object()
   test_compile_particles()
+  test_compile_ants()
   # test_compile_types_inferred()
 end
