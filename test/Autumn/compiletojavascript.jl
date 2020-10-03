@@ -156,7 +156,7 @@ function test_compile_particles()
   )"""
   print(compiletojavascript(a, construct_data()))
 end
-#
+
 
 function test_compile_ants()
   a = au"""(program
@@ -208,8 +208,8 @@ end
   # test_compile_lambda()
   # test_compile_typealias()
   # test_compile_object()
-  # test_compile_particles()
+  test_compile_particles()
   # test_compile_ants()
   # test_compile_types_inferred()
-  test_compile_builtin()
+  # test_compile_builtin()
 end

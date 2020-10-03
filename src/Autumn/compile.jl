@@ -84,7 +84,7 @@ function compiletojavascript(aexpr::AExpr, observations)::String
     generators = compilegenerators_sk(metadata);
     =#
     join([
-      builtin,
+      builtin...,
       lines...,
       stateStruct,
       initFunction,
