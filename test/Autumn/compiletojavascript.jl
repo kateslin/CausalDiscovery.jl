@@ -179,7 +179,7 @@ function test_compile_ants()
 
   (: nextAnt (-> Ant Ant))
   (= nextAnt (fn (ant) (move ant (unitVector ant (closest ant Food))))))"""
-  print(compiletojavascript(a, construct_data()))
+  print("\nFINAL OUTPUT: \n", compiletojavascript(a, construct_data()))
 end
 
 
@@ -191,6 +191,10 @@ function test_compile_types_inferred()
   @test isinferred(mod.next, state, nothing)
 end
 
+function test_compile_builtin()
+  expected = "function occurred(click){\n  return click !== null;\n}\n"
+  @test compilebuiltin_js()[1] == expected
+end
 
 @testset "compile" begin
   # test_compile_if()
@@ -204,7 +208,8 @@ end
   # test_compile_lambda()
   # test_compile_typealias()
   # test_compile_object()
-  test_compile_particles()
-  test_compile_ants()
+  # test_compile_particles()
+  # test_compile_ants()
   # test_compile_types_inferred()
+  test_compile_builtin()
 end

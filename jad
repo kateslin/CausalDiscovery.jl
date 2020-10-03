@@ -1,0 +1,576 @@
+[33mcommit d3309bcee374a1c6d3baf1cd6405f63c7fbf0cde[m[33m ([m[1;36mHEAD -> [m[1;32mjs-transpiler[m[33m, [m[1;31morigin/js-transpiler[m[33m)[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Thu Oct 1 13:37:20 2020 -0400
+
+    Added ants and a few other changes
+
+[33mcommit 6e7180050179d109c1ecc25e3fde85a6d598968e[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Thu Oct 1 12:47:08 2020 -0400
+
+    worked on state, init, next and prev
+
+[33mcommit 0868dfa86a8f11cb4ad49d0ee039697356b6794a[m
+Merge: 2bc9964 b3bf3e0
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sun Sep 27 14:57:20 2020 -0400
+
+    implemented compile object
+
+[33mcommit 2bc9964d9cbfff8eab17c0b2ab0d442100202744[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sun Sep 27 11:16:46 2020 -0400
+
+    debugging changes
+
+[33mcommit b3bf3e0377d1d949dc7248ba7d6101a3fc2b7fee[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Sat Sep 26 21:44:26 2020 -0700
+
+    tentative patch for compileobject call
+
+[33mcommit d6466db953dbb8ac353c1b1e4e4af40c5ad11225[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sat Sep 26 10:19:11 2020 -0400
+
+    small changes
+
+[33mcommit 28f18c745343878f7024230370c5bbc3bd0c3d76[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sat Sep 26 01:32:24 2020 -0400
+
+    added typealias and corresponding test
+
+[33mcommit 02aaca795167d16dcf06b7fc084673413513012f[m
+Merge: 9f6fe9b c83db8c
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sat Sep 26 00:58:34 2020 -0400
+
+    Merge branch 'js-transpiler' of github.com:kateslin/CausalDiscovery.jl into js-transpiler
+
+[33mcommit 9f6fe9b06de9be90a313c6e49d397772b76ecf1d[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sat Sep 26 00:58:32 2020 -0400
+
+    wrote test case
+
+[33mcommit c83db8cccd3b103cd62143c4dec362d5cb8238f0[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Fri Sep 25 21:56:19 2020 -0700
+
+    fix compilecall for binaryops
+
+[33mcommit 4a5850614dcbd216efc17f85d0c5408759b4fd64[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sat Sep 26 00:30:22 2020 -0400
+
+    changed lambda
+
+[33mcommit ea80194fccff6674cf848657148e204243a5e7af[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Fri Sep 25 19:47:44 2020 -0700
+
+    fix compilecall and add extra test case
+
+[33mcommit 987d4f58529f074756f30c144a54872b419984db[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Fri Sep 25 19:21:27 2020 -0700
+
+    got compilelet working
+
+[33mcommit 59207ecd0f8afee6d7a0d9d8f24edc1603568292[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Fri Sep 25 14:54:35 2020 -0700
+
+    got compilefield working
+
+[33mcommit 3e3de59d172e4810469c31f10ccbbb82b6d0ca0a[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Thu Sep 24 03:00:13 2020 -0700
+
+    got compilecall working
+
+[33mcommit 87472f7b5e219569369e36555c619ac200205a89[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Thu Sep 24 02:53:45 2020 -0700
+
+    got compilelist to work
+
+[33mcommit 8858061a6e4c1870ef3f815dc6ead2abd113309e[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Thu Sep 24 02:41:32 2020 -0700
+
+    got compileif working
+
+[33mcommit 1f27fee6e77c758061dc36ada600134797a7fc90[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Thu Sep 24 02:19:53 2020 -0700
+
+    remove typedecl stuff since js is dynamically typed
+
+[33mcommit 2b3ba01343e2dde3af6c66ed11ffd7e93fd65023[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Thu Sep 24 02:16:41 2020 -0700
+
+    got compileassign to work
+
+[33mcommit 3a0e8b30ae06cd411f7a3eb877c275f0a3f0bad0[m
+Merge: b0bd03d 8f62b1a
+Author: Kate Lin <kslin@mit.edu>
+Date:   Wed Sep 23 23:55:56 2020 -0700
+
+    Merge branch 'js-transpiler' of github.com:kateslin/CausalDiscovery.jl into js-transpiler
+    just trying to get this to work big sad
+
+[33mcommit 8f62b1a504821c3c5af8d9c65554c7e6503e41d1[m
+Author: Kate Lin <kate.lin@wellesley.edu>
+Date:   Thu Sep 24 06:55:44 2020 +0000
+
+    assdkfl
+
+[33mcommit b0bd03dfcd2e164f4177b33fe3425f89cbf8bc32[m
+Merge: c58df14 3c77373
+Author: Kate Lin <kslin@mit.edu>
+Date:   Wed Sep 23 23:51:02 2020 -0700
+
+    Merge branch 'js-transpiler' of github.com:kateslin/CausalDiscovery.jl into js-transpiler
+    fixing exported functions
+
+[33mcommit c58df144e2782169f1a7b67a5c7d1fe0d73794ea[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Wed Sep 23 23:50:58 2020 -0700
+
+    akdsjf
+
+[33mcommit 3c77373f30bdee7b3e0650c9951b9c4a5cd1d0ea[m
+Author: Kate Lin <kate.lin@wellesley.edu>
+Date:   Thu Sep 24 06:50:00 2020 +0000
+
+    fix function exporting
+
+[33mcommit a3a1505ac24703c614a7ac7d59e3b27e63f43211[m
+Author: Kate Lin <kslin@mit.edu>
+Date:   Wed Sep 23 23:18:13 2020 -0700
+
+    fix data construction
+
+[33mcommit 9c1c995a8ceebe049f52094630668a5a0bc6b46c[m
+Merge: 66d8b82 63e8cdc
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sun Sep 20 17:20:07 2020 -0400
+
+    merge
+
+[33mcommit 66d8b82f0739cf6d7397ced2163de2e7244e0489[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Sun Sep 20 17:19:07 2020 -0400
+
+    can run tests
+
+[33mcommit 63e8cdc04dd347f5e5d507d0e39c4cde30c24a25[m
+Author: Kate Lin <kate.lin@wellesley.edu>
+Date:   Sun Sep 20 21:11:56 2020 +0000
+
+    fix compiletojavascript so compile is compiling js
+
+[33mcommit ccb8579c22459d2b07fb699f428375f0299e6aec[m
+Author: Kate Lin <kate.lin@wellesley.edu>
+Date:   Sun Sep 20 21:05:15 2020 +0000
+
+    allow testing for js compilation
+
+[33mcommit d1ffd7f3394af3078829698dc84923c11bfa94a3[m
+Author: Kate Lin <kate.lin@wellesley.edu>
+Date:   Sun Sep 20 20:26:41 2020 +0000
+
+    test file
+
+[33mcommit e801d4c4846329981c68970dbe8ffdb2c5681c00[m
+Author: Kate Lin <kate.lin@wellesley.edu>
+Date:   Sun Sep 20 20:22:42 2020 +0000
+
+    init
+
+[33mcommit ccf8bfca121c07d107997b9cc2432d53daa944f9[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Merge: 2cfe8e5 0031782
+Author: riadas <31873755+riadas@users.noreply.github.com>
+Date:   Mon Aug 3 02:03:22 2020 -0400
+
+    Merge pull request #36 from zenna/ria-autumn
+    
+    Autumn-to-Julia Compiler
+
+[33mcommit 0031782b3e414e7ae403f71d19962a16e3ab360f[m[33m ([m[1;31morigin/ria-autumn[m[33m)[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jul 13 22:42:11 2020 -0400
+
+    added isinferred check
+
+[33mcommit b7f9c963dfcced62bc71a22c804f7fa5af689355[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jul 13 21:59:36 2020 -0400
+
+    updated tests
+
+[33mcommit c5cf11b8c6835123aec349bca2362a1304a91728[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jul 13 21:51:09 2020 -0400
+
+    refactored data, added comments
+
+[33mcommit ae805dd1157ca7742e39c223f4355ea9e6f38acb[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jul 13 17:40:22 2020 -0400
+
+    switch from parse(Int, ...) to floor(Int, ...)
+
+[33mcommit 73d70cccb133226d46f8387b444bb69684d3f443[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jul 13 17:34:42 2020 -0400
+
+    added tests
+
+[33mcommit ac4ebd2d2b19bde6a54f294c4d708078c0fe1dde[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jul 13 15:17:05 2020 -0400
+
+    refactored compile.jl using compileutils.jl, removed const keyword, deleted particles/ants .jl files
+
+[33mcommit 3b19ae589a43aedd8d8f2682d1187e7c18274f38[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jul 10 02:25:54 2020 -0400
+
+    refactor
+
+[33mcommit 455a8328b710b54668e91284ff17caa4a0801723[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jul 10 02:14:38 2020 -0400
+
+    bug fixes
+
+[33mcommit 59010e6c80aedb1b2c12be5361707a3f53f8e81c[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jul 10 00:57:11 2020 -0400
+
+    added global variable type declarations, switch to functional style init/next, changed :let parsing
+
+[33mcommit 8f6189bac5aedbf3907dfccd26e0b59e9768933b[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sun Jun 21 23:58:51 2020 -0400
+
+    updated showstring for array input
+
+[33mcommit 688201857f58c67cef6f04e36f02da1e9634e0cd[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sun Jun 21 21:56:33 2020 -0400
+
+    minor change to parsetypeau
+
+[33mcommit 20eb792e337004d2e07a8df306a8c794ebae3137[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sun Jun 21 21:39:47 2020 -0400
+
+    added particles.sx test
+
+[33mcommit 599023b7f7cb43151cd689c7c0781a5c8ff1714f[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sun Jun 21 20:42:06 2020 -0400
+
+    update parsetypeau
+
+[33mcommit 2ca4d99775c2a4f66c18aaea8c9ed4eb746af1a6[m[33m ([m[1;31morigin/ria-autumn-compile-2[m[33m)[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sun Jun 21 16:39:03 2020 -0400
+
+    particles.sx compiles/runs successfully
+
+[33mcommit da2cc33a008424dc54676732053bcb0d56891991[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sat Jun 20 13:24:33 2020 -0400
+
+    added types to history dictionaries
+
+[33mcommit f52efd6e1355e03645dc7ec12dd92e57a3135405[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sat Jun 20 03:44:18 2020 -0400
+
+    switch to no separate compileutils file: faster
+
+[33mcommit b6d54e4f9308706ebce1fc5c438ddece4c85100f[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sat Jun 20 02:54:23 2020 -0400
+
+    additional refactoring: slower
+
+[33mcommit 021ef2057d44dfad3bdf00cae043d682514da405[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sat Jun 20 02:37:41 2020 -0400
+
+    refactored compile.jl
+
+[33mcommit 007f6325274f04503e963d73d7b22b6f2bdb2c4d[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sat Jun 20 00:38:41 2020 -0400
+
+    Expr-based compiler finished
+
+[33mcommit 63dbabf905e194b6f38f642ea2101f56a851543b[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jun 19 03:54:50 2020 -0400
+
+    Expr-based compiler WIP
+
+[33mcommit baa13f2c9a130864443c222dfe8f86df53b50227[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jun 19 01:56:59 2020 -0400
+
+    rearranged compile.jl; still using strings
+
+[33mcommit 543ab71cc96b3f4176f939dd0cfb701a5d52f6a4[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu Jun 18 14:20:17 2020 -0400
+
+    removed camel case for compile function name
+
+[33mcommit 1380b59c53310a94ba17f2f6a2b420efb4c3837c[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu Jun 18 14:17:25 2020 -0400
+
+    updated particles.jl
+
+[33mcommit 7b5d6cb66e3a7444f98ee3a891fca142a1292ff1[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu Jun 18 13:24:30 2020 -0400
+
+    Nothing to nothing
+
+[33mcommit a61bbc4f769885261f0a2024b2917f770eb43f31[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu Jun 18 13:20:57 2020 -0400
+
+    return module
+
+[33mcommit 10c7e3c17d95d0761ca326a98356758064cc6175[m
+Merge: d1f82ba 6e7e7ad
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 13:48:06 2020 -0400
+
+    fix merge conflict
+
+[33mcommit d1f82ba9f897a4a4d94f30501f051a9fa119d1fd[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 13:43:06 2020 -0400
+
+    bug fixes
+
+[33mcommit 6e7e7adc86d863bc8b864f2300e01fcec67dfaff[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 12:13:01 2020 -0400
+
+    refactoring
+
+[33mcommit 2d7c929183e1b4f5724d8835802805bedb2e608c[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 00:51:58 2020 -0400
+
+    removed particles2.jl
+
+[33mcommit 5687d946f1ca845eb4cfd01742506a09aaf8495c[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 00:43:20 2020 -0400
+
+    updates to particles.sx
+
+[33mcommit a391e7bfec2d1dc3dbd4c358c66fa76daa17f913[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 00:35:32 2020 -0400
+
+    particles.sx compiles
+
+[33mcommit 64225bb6642bdbdf5100d5f684c22f2e3198fac5[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 00:34:11 2020 -0400
+
+    cleaned up print statements, particles.sx compiles
+
+[33mcommit c390d6f4cc188a4b26e94b3224540c7d7bf21842[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Tue Jun 16 00:32:01 2020 -0400
+
+    added built-in functions
+
+[33mcommit 9366ba67380235889a6a36a83cada3971e488e42[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jun 15 21:57:06 2020 -0400
+
+    case statements compile
+
+[33mcommit 1a97bc3428a359e2854e0aa4dc8573dae0a0eac0[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jun 15 20:49:08 2020 -0400
+
+    compilation works, except for case statements
+
+[33mcommit e7ecb0c721985cb7701a06c6065ad6685f188ce0[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Sun Jun 14 14:55:36 2020 -0400
+
+    compiler WIP
+
+[33mcommit d7d9ebf0f0cad7c33a00e287b8425568686f41c8[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jun 12 18:14:57 2020 -0400
+
+    removed ants.sx (WIP)
+
+[33mcommit d40d7f1763821ff0ff3415cfb2afdea81fdc1062[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jun 12 18:02:30 2020 -0400
+
+    parsing of particles.au successful
+
+[33mcommit 504eccdee1aeb1fc6e3371b782b247a43d1ee98a[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri Jun 12 18:01:50 2020 -0400
+
+    parsing of particles.au successful
+
+[33mcommit c73a013fc0668d6eb1bb4466bccf73271083f64b[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Wed Jun 10 03:33:44 2020 -0400
+
+    updated parser to handle record-like types
+
+[33mcommit 948f67740ef158ab1fdff0f7d3dd260465a777ca[m
+Merge: 17c86ac 2cfe8e5
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jun 8 15:39:14 2020 -0400
+
+    merge
+
+[33mcommit 17c86ac4267838fdb0ad64e79854970ef00b0e07[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jun 8 03:27:01 2020 -0400
+
+    minor change
+
+[33mcommit 40dda21c3ef5a43d79bb2f34230003037d8a531f[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Mon Jun 8 03:12:29 2020 -0400
+
+    assume external values like clikc are auto-defined
+
+[33mcommit c4cd4c2c11f559eae816c15404229f6450637b0b[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri May 29 15:06:22 2020 -0400
+
+    bug fix
+
+[33mcommit 8c1e5885b60de18823e2eeb80259cddf43710580[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri May 29 14:52:30 2020 -0400
+
+    another minor change
+
+[33mcommit 9ce42a8ccfe733b4933fa27620d3456b432a4a41[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri May 29 14:51:17 2020 -0400
+
+    minor change
+
+[33mcommit f118e48428aafae5aba410083f8cd65fde97eac1[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Fri May 29 14:39:39 2020 -0400
+
+    added ants.au/ants.jl
+
+[33mcommit 2cfe8e525b4e6dddd91f4afc82a8a69d156d0262[m
+Merge: 7d8d521 e793629
+Author: Zenna Tavares <zennatavares@gmail.com>
+Date:   Thu May 28 17:38:33 2020 -0400
+
+    Merge pull request #35 from zenna/ElizabethCausalDiscovery
+    
+    Elizabeth causal discovery
+
+[33mcommit e7936291e7a765a70e493f8ec27617ff890cf919[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Thu May 28 14:00:51 2020 -0600
+
+    test are passing locally
+
+[33mcommit a2a34b3d48658ba36a9c78dfbfb9bece3b99fd77[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Thu May 28 13:38:56 2020 -0600
+
+    found bug
+
+[33mcommit dce5530048f7df7e9eeeea6582d6df99d81efa59[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Thu May 28 13:12:50 2020 -0600
+
+    fixed comments also started working on particles sexpressions version
+
+[33mcommit 46b90be497c2167a27de705f142c34cc1eac58ae[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu May 28 15:09:02 2020 -0400
+
+    alternative compilation (slightly different)
+
+[33mcommit 5c6ac0f7540cd6cf39cb4f1fe7e331f684c58bda[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu May 28 04:10:01 2020 -0400
+
+    minor bug fix
+
+[33mcommit 70e2eab7c624b9449ee0de6fdb0b75306f877ea9[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu May 28 03:06:06 2020 -0400
+
+    added zenna's original code as comment
+
+[33mcommit 04d66927e14555f528ce06c17c7a43f92ea63124[m
+Author: Ria Das <riadas@mit.edu>
+Date:   Thu May 28 03:01:46 2020 -0400
+
+    finished compiled version of particles.au with history tracking
+
+[33mcommit 8177687bc6347655d800777b723feeb6d6bced68[m
+Merge: 070b9f5 7d8d521
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Wed May 27 21:17:38 2020 -0600
+
+    merged and added for lambda functions
+
+[33mcommit 070b9f5a794bf6dfe1dc52dc41d205861b11b3f5[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Wed May 27 18:06:10 2020 -0600
+
+    more small changes
+
+[33mcommit 7d8d521f759a543f446928dbad14ff25afc645c2[m
+Merge: 739b26d 90566dc
+Author: Zenna Tavares <zennatavares@gmail.com>
+Date:   Wed May 27 19:05:06 2020 -0400
+
+    Merge pull request #34 from zenna/zenna-cisc
+    
+    Random Generation
+
+[33mcommit f26ff22a680c84ce8c5f3da9b7b053c8fd2c3ba7[m
+Author: Elizabeth <elizabethweeks22@gmail.com>
+Date:   Wed May 27 16:24:33 2020 -0600
+
+    more updates to the s/aexpr:
+
+[33mcommit 90566dcc544f2c7c5db869d8fdeb4452434a01be[m
+Author: Zenna Tavares <zennatavares@gmail.com>
+Date:   Wed May 27 15:54:56 2020 -0400
+
+    Make tests pass
+
+[33mcommit 5600c6570de9f2782c1b3e655cdd302bcf7f399b[m
+Author: Zenna Tavares <zennatavares@gmail.com>
+Date:   Wed May 27 15:43:24 2020 -0400
+
+    add several nonterminal types

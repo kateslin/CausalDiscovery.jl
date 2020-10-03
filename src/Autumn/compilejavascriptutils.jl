@@ -3,7 +3,7 @@ module CompileJavascriptUtils
 using ..AExpressions
 using MLStyle: @match
 
-export compile_js, compileinit_js, compilestate_js, compilenext_js, compileprev_js, compilelibrary_js, compileharnesses_js, compilegenerators_js, compile_builtin
+export compile_js, compileinit_js, compilestate_js, compilenext_js, compileprev_js, compilelibrary_js, compileharnesses_js, compilegenerators_js, compilebuiltin_js
 
 "Autumn Compile Error"
 struct AutumnCompileError <: Exception
@@ -16,9 +16,8 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 
 # ----- Begin Exported Functions ----- #
 
-function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
+function compile_js(expr::AExpr, data::Dict{String,Any}, parent::Union{AExpr,Nothing}=nothing)
   arr = [expr.head, expr.args...]
-  print(expr)
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
@@ -37,11 +36,11 @@ function compile_js(expr::AExpr, data::Dict{String, Any}, parent::Union{AExpr, N
   end
 end
 
-function compile_js(expr::String, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
+function compile_js(expr::String, data::Dict{String,Any}, parent::Union{AExpr,Nothing}=nothing)
   return """\"$(expr)\""""
 end
 
-function compile_js(expr, data::Dict{String, Any}, parent::Union{AExpr, Nothing}=nothing)
+function compile_js(expr, data::Dict{String,Any}, parent::Union{AExpr,Nothing}=nothing)
   if expr in [:left, :right, :up, :down]
     "occurred($(string(expr)))"
   elseif expr == :clicked
@@ -165,7 +164,7 @@ function compilelibrary_js(data)
     $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
-                return new $(compile_js(x, data))($(join(vcat("origin=origin", "alive=object.alive", "type=object.type", "render=object.render", map(y -> "$(y)=object.$(y)", data["customFields"][x])),", ")));
+                return new $(compile_js(x, data))($(join(vcat("origin=origin", "alive=object.alive", "type=object.type", "render=object.render", map(y -> "$(y)=object.$(y)", data["customFields"][x])), ", ")));
               }
               """, data["objects"]), "\n"))
   }
@@ -181,32 +180,31 @@ function compilelibrary_js(data)
     $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
-                return new $(compile_js(x, data))($(join(vcat("origin=object.origin", "alive=object.alive", "type=object.type", "render=render", map(y -> "$(y)=object.$(y)", data["customFields"][x])),", ")));
+                return new $(compile_js(x, data))($(join(vcat("origin=object.origin", "alive=object.alive", "type=object.type", "render=render", map(y -> "$(y)=object.$(y)", data["customFields"][x])), ", ")));
               }
               """, data["objects"]), "\n"))
   }
   $(library)
   """
 end
-function compile_builtin()
-  """class Position {
-  constructor(x, y){
-    this.x = x;
-    this.y = y;
-  }
-}
-class Cell{
-  constructor(position, color){
-    this.position = position;
-    this.color = color;
-  }
-}
-"""
-end
+# function compile_builtin()
+#   """class Position {
+#   constructor(x, y){
+#     this.x = x;
+#     this.y = y;
+#   }
+# }
+# class Cell{
+#   constructor(position, color){
+#     this.position = position;
+#     this.color = color;
+#   }
+# }
+# """
+# end
 
-#=
-observations: list of ((Click, Left, Right, Up, Down), [list of cells])
-=#
+#= 
+observations: list of ((Click, Left, Right, Up, Down), [list of cells]) =#
 
 function compileharnesses_js(data)
 
@@ -266,8 +264,6 @@ function compileassign(expr, data, parent)
         push!(data["initnext"], expr)
       else
         # push!(data["varTypes"], expr.args[1] => compile_js(expr.args[2], data))
-        print(expr)
-        print(expr.args)
         push!(data["lifted"], expr)
       end
       ""
@@ -286,7 +282,7 @@ end
 
 function compilelet(expr, data, parent)
   assignments = map(x -> compile_js(x, data), expr.args)
-  let_statements = ["let " * string(x) for x in assignments[1:end-1]]
+  let_statements = ["let " * string(x) for x in assignments[1:end - 1]]
   output = join(vcat(let_statements, string("return ", assignments[end], ";")), "\n")
   return output
 end
@@ -302,8 +298,6 @@ function compiletypealias(expr, data, parent)
   constructor = map(field -> "$(compile_js(field.args[1], data))", expr.args[2].args)
   fields = map(field -> "this.$(compile_js(field.args[1], data)) = $(compile_js(field.args[1], data));",
            expr.args[2].args)
-  print(expr.args[2])
-  print("\n")
   push!(data["varTypes"], expr.args[1] => name)
   """
   class $(name) {
@@ -328,7 +322,6 @@ function compilecall(expr, data, parent)
 
   args = map(x -> compile_js(x, data), expr.args[2:end]);
   objectNames = map(x -> compile_js(x, data), data["objects"])
-  # print("OBJECT NAMES: ", objectNames, "\n")
   if name == "clicked"
     "clicked(click, $(join(args, ", ")))"
   elseif name == "Position"
@@ -344,14 +337,12 @@ function compilecall(expr, data, parent)
   elseif name == "object"
     "$(compileobject(expr, data, parent))"
   elseif !(name in binaryOperators) && name != "prev"
-    print("name not in binaryops and is not prev\n")
     "$(name)($(join(args, ", ")))"
   elseif name == "prev"
     "$(compile_js(expr.args[2], data))Prev($(join(["state", map(x -> compile_js(x, data), expr.args[3:end])...], ", ")))"
   elseif name in binaryOperators
     "$(compile_js(expr.args[2], data)) $(name) $(compile_js(expr.args[3], data))"
   elseif name != "=="
-    print("Going into other\n")
     "$(name)($(compile_js(expr.args[2], data)), $(compile_js(expr.args[3], data)))"
   else
     "$(compile_js(expr.args[2], data)) == $(compile_js(expr.args[3], data))"
@@ -408,19 +399,77 @@ function compileobject(expr, data, parent)
 end
 
 function compileon(expr, data, parent)
+  print("\n reached compileon!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n")
   event = expr.args[1]
   response = expr.args[2]
   onData = (event, response)
   push!(data["on"], onData)
-  "got here"
 end
 
 function compileexternal(expr, data, parent)
-  print(data)
   if !(expr.args[1] in data["external"])
     push!(data["external"], expr.args[1])
   end
   compiletypedecl(expr.args[1], data, expr)
 end
+
+function compilebuiltin_js()
+  occurredFunction = builtInDict["occurred"]
+  uniformChoiceFunction = builtInDict["uniformChoice"]
+  uniformChoiceFunction2 = builtInDict["uniformChoice2"]
+  minFunction = builtInDict["min"]
+  clickType = builtInDict["clickType"]
+  rangeFunction = builtInDict["range"]
+  [occurredFunction, uniformChoiceFunction, uniformChoiceFunction2, minFunction, clickType, rangeFunction]
+end
+
+const builtInDict = Dict([
+"occurred"        =>  "function occurred(click){
+  return click !== null;
+}
+",
+"uniformChoice"   =>  "function uniformChoice(freePositions){
+  return freePositions[Math.floor(Math.random()*freePositions.length)];
+}
+",
+"uniformChoice2"   =>  "function uniformChoice2(freePositions, n){
+  newPositions = [];
+  used = [];
+  if (n > newPositions.size()){
+    throw 'too many positions requested!';
+  }
+  for (i=0; i<n; i++){
+    while (true){
+      index = Math.floor(Math.random()*freePositions.length);
+      if (! used.contains(index)){
+        newPositions.add(freePositions[index]);
+        used.add(index);
+        break;
+      }
+    }
+  }
+  return freePositions
+}
+",
+"min"              => "function min(arr) {
+  return Math.min(...arr)
+}
+",
+"clickType"       =>  "class Click{
+  constructor(x, y){
+    this.x = x;
+    this.y = y;
+  }
+}
+",
+"range"           => "function range(start, stop){
+  let arr = [];
+  for(let i = start; i <= stop; i += 1){
+     arr.push(i);
+  }
+  return arr;
+}
+"
+])
 
 end
