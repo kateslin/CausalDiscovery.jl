@@ -64,7 +64,7 @@ function compilestate_js(data)
   GRID_SIZE = $(GRID_SIZE);
   function State() {
     this.time = {};
-    $(join(stateHistories, "\n"))
+    $(join(stateHistories, "\n  "))
     this.clickHistory = {};
     this.leftHistory = {};
     this.rightHistory = {};
@@ -86,10 +86,11 @@ function compileinit_js(data)
                      vcat(data["initnext"], data["lifted"]))
   """
   state = State();
+
   function init() {
     $(join(historyInitNextDeclarations, "\n"))
     state.time = 0;
-    $(join(historyInits, "\n"))
+    $(join(historyInits, "\n  "))
     state.clickHistory[0] = null;
     state.leftHistory[0] = null;
     state.rightHistory[0] = null;
@@ -113,11 +114,11 @@ function compilenext_js(data)
                           }""", data["on"])
   """
   function next(state, click, left, right, up, down) {
-    $(join(currHistValues, "\n"))
+    $(join(currHistValues, "\n  "))
 
     $(join(onClauses, "\n"))
     state.time = state.time + 1;
-    $(join(nextHistValues, "\n"))
+    $(join(nextHistValues, "\n  "))
     state.clickHistory[state.time] = click;
     state.leftHistory[state.time] = left;
     state.rightHistory[state.time] = right;
