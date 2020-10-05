@@ -60,7 +60,8 @@ function compiletojavascript(aexpr::AExpr, observations)::String
   if (aexpr.head == :program)
     # handle AExpr lines
     lines = map(arg -> compile_js(arg, metadata, aexpr), aexpr.args)
-
+    print(lines)
+    print("\n\n\n\n\n")
 
     # construct state struct
     stateStruct = compilestate_js(metadata)

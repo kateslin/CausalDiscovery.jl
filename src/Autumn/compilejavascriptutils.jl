@@ -133,11 +133,11 @@ end
 function compileprev_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                            collect(keys(data["varTypes"])))
-  prevFunctions = map(x -> """PrevN(state, n) {
+  prevFunctions = map(x -> """function PrevN(state, n) {
                                 return state.$(compile_js(x, data))History[state.time - n >= 0 ? state.time - n : 0];
                            }""", objectInstances)
 
-  prevFunctionsNoArgs = map(x -> """$(compile_js(x, data))Prev(state) {
+  prevFunctionsNoArgs = map(x -> """function $(compile_js(x, data))Prev(state) {
       return state.$(compile_js(x, data))History[state.time];
   }""", objectInstances)
   """
@@ -266,7 +266,6 @@ end
 
 function compiletypedecl(expr, data, parent)
   push!(data["varTypes"], expr.args[1] => expr.args[2])
-  compile_js(expr.args[1], data)
 end
 
 function compilelet(expr, data, parent)
