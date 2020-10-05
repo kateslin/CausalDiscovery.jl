@@ -133,23 +133,11 @@ end
 function compileprev_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                            collect(keys(data["varTypes"])))
-  prevFunctions = map(x -> """$(compile_js(data["varTypes"][x] in data["objects"] ?
-                                  :Object
-                                  :
-                                  data["varTypes"][x] in map(x -> [:List, x], data["objects"]) ?
-                                  [:List, :Object]
-                                  :
-                                  data["varTypes"][x], data)) $(compile_js(x, data))PrevN(State state, int n) {
+  prevFunctions = map(x -> """PrevN(state, n) {
                                 return state.$(compile_js(x, data))History[state.time - n >= 0 ? state.time - n : 0];
                            }""", objectInstances)
 
-  prevFunctionsNoArgs = map(x -> """$(compile_js(data["varTypes"][x] in data["objects"] ?
-  :Object
-  :
-  data["varTypes"][x] in map(x -> [:List, x], data["objects"]) ?
-  [:List, :Object]
-  :
-  data["varTypes"][x], data)) $(compile_js(x, data))Prev(State state) {
+  prevFunctionsNoArgs = map(x -> """$(compile_js(x, data))Prev(state) {
       return state.$(compile_js(x, data))History[state.time];
   }""", objectInstances)
   """
@@ -359,6 +347,7 @@ end
 # TODO: Figure out how to deal with typedecl since there's not typedecl in javascript
 function compileobject(expr, data, parent)
   name = String.(expr.args[2])
+  push!(data["objects"], Symbol(name))
   custom_fields = map(field ->
                       "$(compile_js(field.args[1], data))",
                       filter(x -> (typeof(x) == AExpr && x.head == :typedecl), expr.args[3:end]))
