@@ -18,6 +18,8 @@ binaryOperators = map(string, [:+, :-, :/, :*, :&, :|, :>=, :<=, :>, :<, :(==), 
 
 function compile_js(expr::AExpr, data::Dict{String,Any}, parent::Union{AExpr,Nothing}=nothing)
   arr = [expr.head, expr.args...]
+  print(arr)
+  print("\n")
   res = @match arr begin
     [:if, args...] => compileif(expr, data, parent)
     [:assign, args...] => compileassign(expr, data, parent)
@@ -32,6 +34,7 @@ function compile_js(expr::AExpr, data::Dict{String,Any}, parent::Union{AExpr,Not
     [:typedecl, args...] => compiletypedecl(expr, data, parent)
     [:external, args...] => compileexternal(expr, data, parent)
     [:case, args...] => compilecase(expr, data, parent)
+    [:initnext, args...] => compilenext(expr, data, parent)
     [args...] => throw(AutumnCompileError(string("Invalid AExpr Head: ", expr.head))) # if expr head is not one of the above, throw error
   end
 end
@@ -75,6 +78,11 @@ function compilestate_js(data)
   """
 end
 
+function compilenext(expr, data, parent)
+  compile_js(expr.args[2], data)
+end
+
+
 function compileinit_js(data)
   objectInstances = filter(x -> data["varTypes"][x] in vcat(data["objects"], map(o -> [:List, o], data["objects"])),
                           collect(keys(data["varTypes"])))
@@ -108,7 +116,9 @@ function compilenext_js(data)
   currHistValues = map(x -> "$(compile_js(x.args[1], data)) = state.$(compile_js(x.args[1], data))History[state.time];",
                        vcat(data["initnext"], data["lifted"]))
   nextHistValues = map(x -> "state.$(compile_js(x.args[1], data))History[state.time] = $(compile_js(x.args[1], data));",
-                       vcat(data["initnext"], data["lifted"]))
+                      data["lifted"])
+  nextFuncHistValues = map(x -> "state.$(compile_js(x.args[1], data))History[state.time] = $(compile_js(x.args[2], data));",
+                      data["initnext"])
   onClauses = map(x -> """if ($(compile_js(x[1], data))) {
                             $(compile_js(x[2], data))
                           }""", data["on"])
@@ -119,6 +129,7 @@ function compilenext_js(data)
     $(join(onClauses, "\n"))
     state.time = state.time + 1;
     $(join(nextHistValues, "\n  "))
+    $(join(nextFuncHistValues, "\n  "))
     state.clickHistory[state.time] = click;
     state.leftHistory[state.time] = left;
     state.rightHistory[state.time] = right;
@@ -153,7 +164,7 @@ function compilelibrary_js(data)
     $(join(map(x ->
               """
               if (object.type == \"$(compile_js(x, data))\") {
-                return new $(compile_js(x, data))($(join(vcat("origin=origin", "alive=object.alive", "type=object.type", "render=object.render", map(y -> "$(y)=object.$(y)", data["customFields"][x])), ", ")));
+                return new $(compile_js(x, data))($(join(vcat("origin=origin", "alive=object.alive", "type=object.type", "render=object.render", map(y -> "$object.$(y)", data["customFields"][x])), ", ")));
               }
               """, data["objects"]), "\n"))
   }
@@ -266,6 +277,7 @@ end
 
 function compiletypedecl(expr, data, parent)
   push!(data["varTypes"], expr.args[1] => expr.args[2])
+  ""
 end
 
 function compilelet(expr, data, parent)
@@ -307,18 +319,19 @@ end
 # TODO: Confirm this makes sense for all test cases
 function compilecall(expr, data, parent)
   name = compile_js(expr.args[1], data);
-
   args = map(x -> compile_js(x, data), expr.args[2:end]);
   objectNames = map(x -> compile_js(x, data), data["objects"])
-  if name == "clicked"
+  if expr.args[1] == :on
+    compileon(expr, data, expr)
+  elseif name == "clicked"
     "clicked(click, $(join(args, ", ")))"
   elseif name == "Position"
-    "new $(name)(x=$(args[1]), y=$(args[2]))"
+    "new $(name)($(args[1]), $(args[2]))"
   elseif name == "Cell"
     if length(args) == 2
       "new $(name)(position=$(args[1]), color=$(args[2]))"
     elseif length(args) == 3
-      "new $(name)(position=new Position(x=$(args[1]), y=$(args[2])), color=$(args[3]))"
+      "new $(name)(position=new Position($(args[1]), $(args[2])), $(args[3]))"
     end
   elseif name in objectNames
     "$(lowercase(name[1]))$(name[2:end])($(join(args, "\n")))"
@@ -388,11 +401,11 @@ function compileobject(expr, data, parent)
 end
 
 function compileon(expr, data, parent)
-  print("\n reached compileon!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n")
-  event = expr.args[1]
-  response = expr.args[2]
+  event = expr.args[2]
+  response = compile_js(expr.args[3], data)
   onData = (event, response)
   push!(data["on"], onData)
+  ""
 end
 
 function compileexternal(expr, data, parent)
@@ -481,10 +494,6 @@ const builtInDict = Dict([
         this.color = color;
       }
     }
-    #javascript is not polymorphic
-    Cell(position::Position, color::String) = Cell(position, color, 0.8)
-    Cell(x::Int, y::Int, color::String) = Cell(Position(floor(Int, x), floor(Int, y)), color, 0.8)
-    Cell(x::Int, y::Int, color::String, opacity::Float64) = Cell(Position(floor(Int, x), floor(Int, y)), color, opacity)
 
     class Scene{
       constructor(objects, background){
@@ -501,32 +510,48 @@ const builtInDict = Dict([
         return true;
       }
 
+    function updateObj(list, map_fn){
+           new_list = [...list];
+           new_list.map(map_fn);
+           return new_list;
+    }
+
+    function addObj(list, obj)
+          new_list = [...list];
+          new_list.push(obj);
+          return new_list;
+        end
 
     function adjPositions(position){
         return [Position(position.x, position.y + 1), Position(position.x, position.y - 1), Position(position.x + 1, position.y), Position(position.x - 1, position.y)].filter(isWithinBounds);
-      }
-
-    function rotateNoCollision(object){
-      return (isWithinBounds(rotate(object)) && isFree(rotate(object), object)) ? rotate(object) : object;
-      }
-
-    function randomPositions(GRID_SIZE, n){
-      nums = uniformChoice([0:(GRID_SIZE * GRID_SIZE - 1)], n);
-      return nums.map(num => Position(num % GRID_SIZE, floor(num/GRID_SIZE)));
-      }
-
-    function updateOrigin(object, new_origin){
-      new_object = JSON.parse(JSON.stringify(object));
-      new_object.origin = new_origin;
-      return new_object;
-      }
-
-    function updateAlive(object, new_alive){
-      new_object = JSON.parse(JSON.stringify(object));
-      new_object.alive = new_alive;
-      return new_object;
       }"
+
+    # function rotateNoCollision(object){
+    #   return (isWithinBounds(rotate(object)) && isFree(rotate(object), object)) ? rotate(object) : object;
+    #   }
+    #
+    # function randomPositions(GRID_SIZE, n){
+    #   nums = uniformChoice([0:(GRID_SIZE * GRID_SIZE - 1)], n);
+    #   return nums.map(num => Position(num % GRID_SIZE, floor(num/GRID_SIZE)));
+    #   }
+    #
+    # function updateOrigin(object, new_origin){
+    #   new_object = JSON.parse(JSON.stringify(object));
+    #   new_object.origin = new_origin;
+    #   return new_object;
+    #   }
+    #
+    # function updateAlive(object, new_alive){
+    #   new_object = JSON.parse(JSON.stringify(object));
+    #   new_object.alive = new_alive;
+    #   return new_object;
+    #   }"
 ##################################################################################################################
+#javascript is not polymorphic
+# Cell(position::Position, color::String) = Cell(position, color, 0.8)
+# Cell(x::Int, y::Int, color::String) = Cell(Position(floor(Int, x), floor(Int, y)), color, 0.8)
+# Cell(x::Int, y::Int, color::String, opacity::Float64) = Cell(Position(floor(Int, x), floor(Int, y)), color, opacity)
+
 #     #polymorphic
 #     Scene(objects::AbstractArray) = Scene(objects, "#ffffff00")
 #
@@ -607,10 +632,6 @@ const builtInDict = Dict([
 #     #_____________________________________________
 #
 #
-#     function addObj(list::Array{<:Object}, obj::Object)
-#       new_list = vcat(list, obj)
-#       new_list
-#     end
 #
 #     function addObj(list::Array{<:Object}, objs::Array{<:Object})
 #       new_list = vcat(list, objs)
@@ -645,14 +666,6 @@ const builtInDict = Dict([
 #
 #       setproperty!(new_obj, Symbol(field), value)
 #       new_obj
-#     end
-#
-#
-#     function updateObj(list::Array{<:Object}, map_fn, filter_fn=filter_fallback)
-#       orig_list = filter(obj -> !filter_fn(obj), list)
-#       filtered_list = filter(filter_fn, list)
-#       new_filtered_list = map(map_fn, filtered_list)
-#       vcat(orig_list, new_filtered_list)
 #     end
 #
 #
